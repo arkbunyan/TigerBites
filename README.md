@@ -4,7 +4,7 @@
 - Ark Bunyan 
 - Shruti Mandrekar
 - Leah Shefferman
-- Evan Walsh*
+- Evan Walsh
 
 ---
 
