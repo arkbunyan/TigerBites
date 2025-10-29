@@ -1,0 +1,51 @@
+<div id="map" style="height: 500px; width: 100%;"></div>
+
+<script>
+function initMap() {
+  const center = { lat: 40.3486, lng: -74.6593 };
+
+  const map = new google.maps.Map(document.getElementById("map"), {
+    zoom: 14,
+    center: center,
+  });
+
+  const locations = [
+    {
+      position: { lat: 40.351148, lng: -74.659627 },
+      title: "Chuck's Spring Street Cafe",
+      info: "<h3>Chuck's Spring Street Cafe</h3><p>Bare-bones counter-serve joint with a varied fast-food menu, from Buffalo wings to burgers & BBQ.</p>",
+    },
+    {
+      position: { lat: 40.359672, lng: -74.663312 },
+      title: "Conte's Pizza",
+      info: "<h3>Conte's Pizza</h3><p>Bustling & cavernous spot for thin-crust pies, drinks, sports on TV & old-school decor.</p>",
+    },
+    {
+      position: { lat: 40.350126, lng: -74.659128 },
+      title: "Tacoria",
+      info: "<h3>Tacoria</h3><p>Modern tacos, burritos & vegan offerings in a funky Mexican setting with vibrant art.</p>",
+    },
+  ];
+
+  locations.forEach((loc) => {
+    const marker = new google.maps.Marker({
+      position: loc.position,
+      map: map,
+      title: loc.title,
+    });
+
+    const infoWindow = new google.maps.InfoWindow({
+      content: loc.info,
+    });
+
+    marker.addListener("click", () => {
+      infoWindow.open(map, marker);
+    });
+  });
+}
+</script>
+
+  <!-- Load Google Maps API NOTE: API KEY IS HARDCODED. DO NOT MAKE REPO PUBLIC -->
+  <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKMIFCaA4lMg03q7j_AevC-sHcJCv7RwA&callback=initMap">
+  </script>

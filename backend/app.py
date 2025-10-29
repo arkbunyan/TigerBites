@@ -1,7 +1,7 @@
 import flask
 # import database
 
-app = flask.Flask(__name__, template_folder='templates')
+app = flask.Flask(__name__, template_folder='../frontend/templates')
 
 # Home Page
 @app.route('/', methods=['GET'])
@@ -21,7 +21,7 @@ def home_page():
 
 @app.route('/search_form', methods=['GET'])
 def search_form():
-    html_code = flask.render_template('search_box.html')
+    html_code = flask.render_template('search_form.html')
     response = flask.make_response(html_code)
     return response
 
