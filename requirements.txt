@@ -1,2 +1,4 @@
 Flask
+Flask-session
+Flask-SQLAlchemy
 python-dotenv
