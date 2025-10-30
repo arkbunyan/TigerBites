@@ -24,7 +24,8 @@ def home_page():
     auth.authenticate()
     # NOTE: We probably want a list of dicts here
     # restaurants = database.get_restaurant_cards()
-    restaurants = [True, []]  # Placeholder
+    restaurants = database.load_all_restaurants()
+    print(restaurants)
     if restaurants[0] is False:
         html_code = flask.render_template('error.html',
             message=restaurants[1])
@@ -35,9 +36,27 @@ def home_page():
     response = flask.make_response(html_code)
     return response
 
-@app.route('/search_form', methods=['GET'])
-def search_form():
-    html_code = flask.render_template('search_form.html')
+@app.route('/map_page', methods=['GET'])
+def map_page():
+    html_code = flask.render_template('map_page.html')
+    response = flask.make_response(html_code)
+    return response
+
+@app.route('/search_results', methods=['GET'])
+def search_results():
+    
+    # Test Restaurant Data
+    name = flask.request.args.get('name', '')
+    category = flask.request.args.get('category', '')
+    restaurants = database.restaurant_search([name, category])
+    if restaurants[0] is False:
+        html_code = flask.render_template('error.html',
+            message=restaurants[1])
+        response = flask.make_response(html_code)
+        return response
+
+    html_code = flask.render_template('search_results.html', 
+        restaurants=restaurants[1])
     response = flask.make_response(html_code)
     return response
 
