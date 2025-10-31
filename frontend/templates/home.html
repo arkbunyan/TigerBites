@@ -1,27 +1,40 @@
 <!DOCTYPE html>
 <html>
-    <head> 
-        <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">-->
-    </head>
-    <body>
-        {% include 'header.html' %}
-        <hr>
-        {% include 'nav_bar.html' %}
-        <hr>
-        
-        <div>
-            {% include 'search_form.html' %}
-            <div>
-                <h2>Restaurants</h2>
-                {% for rest in restaurants %}
-                    <div class="results">
-                        <h3>{{ rest.name }}</h3>
-                        <p>{{ rest.category }}</p>
-                        <p>{{ rest.avg_price }}</p>
-                        <hr>
-                    </div>
-                {% endfor %}
-        </div>
-    </body>
+  <head>
+    <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}"> -->
+    <meta charset="utf-8">
+    <title>TigerBites</title>
+  </head>
+  <body>
+    {% include 'header.html' %}
+    <hr>
+    {% include 'nav_bar.html' %}
+    <hr>
+
+    <div class="page">
+      {% include 'search_form.html' %}
+
+      <section class="list">
+        <h2>Restaurants</h2>
+
+        {% if restaurants and restaurants|length > 0 %}
+          {% for rest in restaurants %}
+            <div class="result">
+              <h3>
+                <a href="{{ url_for('restaurant_details', rest_id=rest.id) }}">
+                  {{ rest.name }}
+                </a>
+              </h3>
+              <p>{{ rest.category }}</p>
+              {% if rest.hours %}<p>{{ rest.hours }}</p>{% endif %}
+              {% if rest.avg_price %}<p>Avg price: {{ rest.avg_price }}</p>{% endif %}
+              <hr>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No restaurants found.</p>
+        {% endif %}
+      </section>
+    </div>
+  </body>
 </html>
-       

@@ -60,6 +60,21 @@ def search_results():
     response = flask.make_response(html_code)
     return response
 
+@app.route('/restaurants/<int:rest_id>', methods=['GET'])
+def restaurant_details(rest_id):
+
+    ok_r, rest = database.load_restaurant_by_id(rest_id)
+    if not ok_r:
+        return flask.abort(404)
+
+    ok_m, menu = database.load_menu_for_restaurant(rest_id)
+    if not ok_m:
+        menu = []
+
+    html = flask.render_template('restaurant_details.html',
+                                 restaurant=rest, menu_items=menu)
+    return flask.make_response(html)
+
 # @app.route('/protected')
 # def protected():
 #     # Force CAS authentication (will redirect to CAS if needed)
