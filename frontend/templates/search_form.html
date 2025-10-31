@@ -1,19 +1,26 @@
-<body>
-    <form action=/search_results method="get">
-        <table>
-            <tr align="left">
-                <td>Search:</td>
-                <td>
-                    <input type="text" name="name" autofocus/>
-                </td>
-            </tr>
-            <tr align="left">
-                <td>Category:</td>
-                <td>
-                    <input type="text" name="category" autofocus/>
-                </td>
-            </tr>
-        </table>
-        <input type="submit" value="Go">
-    </form>
-</body>
+<form action="{{ url_for('search_results') }}" method="get">
+    <table>
+        <tr align="left">
+            <td>Search:</td>
+            <td>
+                <input
+                    type="text"
+                    name="name"
+                    value="{{ request.args.get('name', '') }}"
+                    autofocus
+                />
+            </td>
+        </tr>
+        <tr align="left">
+            <td>Category:</td>
+            <td>
+                <input
+                    type="text"
+                    name="category"
+                    value="{{ request.args.get('category', '') }}"
+                />
+            </td>
+        </tr>
+    </table>
+    <input type="submit" value="Go">
+</form>

@@ -14,13 +14,18 @@
             <div>
                 <h2>Restaurants</h2>
                 {% for rest in restaurants %}
-                    <div class="results">
-                        <h3>{{ rest.name }}</h3>
+                    <div class="result">
+                        <h3>
+                            <a href="{{ url_for('restaurant_details', rest_id=rest.id) }}">
+                                {{ rest.name }}
+                            </a>
+                        </h3>
                         <p>{{ rest.category }}</p>
                         <p>{{ rest.avg_price }}</p>
                         <hr>
                     </div>
                 {% endfor %}
+            </div>
         </div>
     </body>
 </html>
