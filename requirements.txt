@@ -2,3 +2,4 @@ Flask
 Flask-Session
 Flask-SQLAlchemy
 python-dotenv
+psycopg2-binary
