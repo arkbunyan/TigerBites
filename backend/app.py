@@ -3,7 +3,7 @@ import flask_session
 import flask_sqlalchemy
 import os
 from backend import auth
-from top import app
+from backend.top import app
 import database
 
 session_database_url = os.getenv('SESSION_DATABASE_URL',
