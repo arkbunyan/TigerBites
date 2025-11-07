@@ -2,7 +2,7 @@ import flask
 import flask_session
 import flask_sqlalchemy
 import os
-import auth
+from backend import auth
 from top import app
 import database
 
