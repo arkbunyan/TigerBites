@@ -23,9 +23,8 @@ _CAS_URL = 'https://fed.princeton.edu/cas/'
 @app.route('/logoutapp', methods=['GET'])
 def logoutapp():
 
-    # Log out of the application.
     flask.session.clear()
-    return flask.send_file('loggedout.html')
+    return flask.redirect('/logout_app')
 
 #-----------------------------------------------------------------------
 
@@ -36,7 +35,7 @@ def logoutcas():
     logout_url = (_CAS_URL + 'logout?service='
         + urllib.parse.quote(
             re.sub('logoutcas', 'logoutapp', flask.request.url)))
-    flask.abort(flask.redirect(logout_url))
+    return flask.redirect(logout_url)
 
 #-----------------------------------------------------------------------
 

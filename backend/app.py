@@ -42,6 +42,24 @@ def map_page():
     response = flask.make_response(html_code)
     return response
 
+@app.route('/profile_page', methods=['GET'])
+def profile_page():
+    # Protected entrance to page
+    auth.authenticate()
+    user = auth.get_user_info()
+    html_code = flask.render_template('profile_page.html', user=user)
+    response = flask.make_response(html_code)
+    return response
+
+@app.route('/logout_app', methods=['GET'])
+def logout_app():
+    html_code = flask.render_template('logout_app.html')
+    return flask.make_response(html_code)
+
+@app.route('/logout_cas', methods=['GET'])
+def logout_cas():
+    return flask.redirect('/logoutcas')
+
 @app.route('/search_results', methods=['GET'])
 def search_results():
     
