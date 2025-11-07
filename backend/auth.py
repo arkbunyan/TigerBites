@@ -103,6 +103,33 @@ def get_username():
 
 #-----------------------------------------------------------------------
 
+def get_fullname():
+
+    user_info = flask.session.get('user_info')
+    if user_info is None:
+        return ''
+    return user_info.get('attributes', {}).get('displayname', [''])[0]
+
+#-----------------------------------------------------------------------
+
+def get_firstname():
+
+    user_info = flask.session.get('user_info')
+    if user_info is None:
+        return ''
+    return user_info.get('attributes', {}).get('givenname', [''])[0]
+
+#-----------------------------------------------------------------------
+
+def get_email():
+    
+    user_info = flask.session.get('user_info')
+    if user_info is None:
+        return ''
+    return user_info.get('attributes', {}).get('mail', [''])[0]
+
+#-----------------------------------------------------------------------
+
 # Authenticate the user. Do not return unless the user is
 # successfully authenticated.
 

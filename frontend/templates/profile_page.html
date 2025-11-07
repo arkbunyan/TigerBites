@@ -9,9 +9,11 @@
         {% include 'nav_bar.html' %}
         <hr>
         <div class="content">
-            <h1>User Profile</h1>
-            <p>Welcome, {{username}}!</p>
-            <p>Email: {{ email }}</p>
+            <h1>Welcome, {{ firstname }}!</h1>
+            <p>User Information:</p>
+            <ul>
+                <li>Full Name: {{ fullname }}</li>
+                <li>Email: {{ email }}</li>
         </div>
     </body>
 </html>

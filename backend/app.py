@@ -25,6 +25,7 @@ def home_page():
     # NOTE: We probably want a list of dicts here
     # restaurants = database.get_restaurant_cards()
     restaurants = database.load_all_restaurants()
+    firstname = auth.get_firstname()
     print(restaurants)
     if restaurants[0] is False:
         html_code = flask.render_template('error.html',
@@ -32,13 +33,14 @@ def home_page():
         response = flask.make_response(html_code)
         return response
     html_code = flask.render_template('home.html',
-        restaurants=restaurants[1])
+        restaurants=restaurants[1], firstname=firstname)
     response = flask.make_response(html_code)
     return response
 
 @app.route('/map_page', methods=['GET'])
 def map_page():
-    html_code = flask.render_template('map_page.html')
+    firstname = auth.get_firstname()
+    html_code = flask.render_template('map_page.html', firstname=firstname)
     response = flask.make_response(html_code)
     return response
 
@@ -47,7 +49,11 @@ def profile_page():
     # Protected entrance to page
     auth.authenticate()
     user = auth.get_user_info()
-    html_code = flask.render_template('profile_page.html', user=user)
+    username = auth.get_username()
+    firstname = auth.get_firstname()
+    fullname = auth.get_fullname()
+    email = auth.get_email()
+    html_code = flask.render_template('profile_page.html', user=user, username=username, firstname=firstname, fullname=fullname, email=email)
     response = flask.make_response(html_code)
     return response
 
