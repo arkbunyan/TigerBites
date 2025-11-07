@@ -122,5 +122,6 @@ def insert_restaurant(restaurant_data, menu_data):
 
 
 if __name__ == '__main__':
-    #create_restaurants_table()
+    create_restaurants_table()
+    create_menu_items_table()
     create_users_table()
