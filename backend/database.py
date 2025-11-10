@@ -38,7 +38,7 @@ def load_all_restaurants():
                 response = []
                 for row in rows:
                     entry = {
-                        'id': str(row['id']),
+                        'id': (row['id']),
                         'created_at': row['created_at'].isoformat(),
                         'name': row['name'],
                         'description': row['description'],
@@ -79,7 +79,7 @@ def restaurant_search(params):
                 response = []
                 for row in rows:
                     entry = {
-                        'id': str(row['id']),
+                        'id': (row['id']),
                         'created_at': row['created_at'].isoformat(),
                         'name': row['name'],
                         'description': row['description'],
@@ -108,7 +108,7 @@ def load_restaurant_by_id(rest_id):
                     return [False, 'Not found']
 
                 data = {
-                    'id': str(row['id']),
+                    'id': (row['id']),
                         'created_at': row['created_at'].isoformat(),
                         'name': row['name'],
                         'description': row['description'],

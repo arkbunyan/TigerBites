@@ -86,7 +86,7 @@ def search_results():
     response = flask.make_response(html_code)
     return response
 
-@app.route('/restaurants/<int:rest_id>', methods=['GET'])
+@app.route('/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
 
     ok_r, rest = database.load_restaurant_by_id(rest_id)
