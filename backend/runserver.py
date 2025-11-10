@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import app as tigerbites
+from backend import app as tigerbites
 
 def main():
 

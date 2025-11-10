@@ -3,8 +3,9 @@ import flask_session
 import flask_sqlalchemy
 import os
 from backend import auth
+from backend import database
 from backend.top import app
-import database
+
 
 session_database_url = os.getenv('SESSION_DATABASE_URL',
     'sqlite:///proto_sessions.sqlite') 
