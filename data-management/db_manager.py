@@ -13,7 +13,8 @@ import psycopg2
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
-DATABASE_URL = os.environ['TB_DATABASE_URL']
+# Default fallback (used if TB_DATABASE_URL is missing)
+DATABASE_URL = os.getenv("TB_DATABASE_URL")
 
 #NOTE: Hardcoded for our specific db schema
 # Helper function to create the Restaurants Table

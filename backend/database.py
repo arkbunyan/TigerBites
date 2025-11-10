@@ -1,10 +1,11 @@
 import sys
 import sqlite3
 import contextlib
+import os
 
 # Read-only access for the web app layer
-DATABASE_URL = 'file:proto_db.sqlite?mode=ro'
-
+# Default fallback (used if TB_DATABASE_URL is missing)
+DATABASE_URL = os.getenv("TB_DATABASE_URL")
 def _err_response(ex):
     error_message = str(sys.argv[0] + ': ')
     print(f"{error_message} {str(ex)}", file=sys.stderr)

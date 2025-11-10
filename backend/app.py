@@ -5,12 +5,13 @@ import os
 from backend import auth
 from backend import database
 from backend.top import app
+from dotenv import load_dotenv
 
 
-session_database_url = os.getenv('SESSION_DATABASE_URL',
-    'sqlite:///proto_sessions.sqlite') 
-session_database_url = session_database_url.replace(
-    'postgres://', 'postgresql://')
+load_dotenv()  # Load environment variables from .env file
+session_database_url = os.getenv("TB_DATABASE_URL")
+session_database_url = session_database_url.replace('postgres://', 'postgresql://')
+# Configure session to use the database
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['SQLALCHEMY_DATABASE_URI'] = session_database_url
