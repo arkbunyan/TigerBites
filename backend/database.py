@@ -46,8 +46,8 @@ def load_all_restaurants():
                         'category': row['category'],
                         'hours': row['hours'],
                         'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'lat_long': row['lat_long']
-    
+                        'latitude': row['latitude'],
+                        'longitude': row['longitude']
                     }
                     response.append(entry)
 
@@ -87,7 +87,8 @@ def restaurant_search(params):
                         'category': row['category'],
                         'hours': row['hours'],
                         'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'lat_long': row['lat_long']
+                        'latitude': row['latitude'],
+                        'longitude': row['longitude']
                     }
                     response.append(entry)
 
@@ -115,7 +116,8 @@ def load_restaurant_by_id(rest_id):
                         'category': row['category'],
                         'hours': row['hours'],
                         'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'lat_long': row['lat_long']
+                        'latitude': row['latitude'],
+                        'longitude': row['longitude']
                 }
                 return [True, data]
     except Exception as ex:
