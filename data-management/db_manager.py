@@ -14,7 +14,8 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 # Default fallback (used if TB_DATABASE_URL is missing)
-DATABASE_URL = os.getenv("TB_DATABASE_URL")
+# NOTE: for testing link is hardcoded, will set .env variable in deployment
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://u7sk8g1h93e306:p94912068fe7bda86fd9ef52cc3031e244d8cd7e6faa496c8a9292b49f0fea714@c57oa7dm3pc281.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d2tknd90vileh2")
 
 #NOTE: Hardcoded for our specific db schema
 # Helper function to create the Restaurants Table

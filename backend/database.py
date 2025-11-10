@@ -8,7 +8,7 @@ import psycopg2.extras
 load_dotenv()  # Load environment variables from .env file
 
 # Read-only access for the web app layer (Postgres)
-DATABASE_URL = os.getenv("TB_DATABASE_URL")
+DATABASE_URL = os.getenv("TB_DATABASE_URL", "postgresql://u7sk8g1h93e306:p94912068fe7bda86fd9ef52cc3031e244d8cd7e6faa496c8a9292b49f0fea714@c57oa7dm3pc281.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d2tknd90vileh2")
 if not DATABASE_URL:
     raise RuntimeError(
         "Environment variable TB_DATABASE_URL is not set. "
@@ -47,6 +47,7 @@ def load_all_restaurants():
                         'hours': row['hours'],
                         'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
                         'lat_long': row['lat_long']
+    
                     }
                     response.append(entry)
 
