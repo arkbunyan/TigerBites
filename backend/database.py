@@ -68,7 +68,7 @@ def restaurant_search(params):
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Use ILIKE for case-insensitive substring match in Postgres
                 sql = (
-                    "SELECT id, name, category, hours, avg_price "
+                    "SELECT * "
                     "FROM restaurants "
                     "WHERE name ILIKE %s AND category ILIKE %s "
                     "ORDER BY name ASC"
