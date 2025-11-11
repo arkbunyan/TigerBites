@@ -7,8 +7,7 @@ from backend import database
 from backend.top import app
 
 
-session_database_url = os.getenv('SESSION_DATABASE_URL',
-    'sqlite:///proto_sessions.sqlite') 
+session_database_url = os.getenv('TB_DATABASE_URL') 
 session_database_url = session_database_url.replace(
     'postgres://', 'postgresql://')
 app.config['SESSION_PERMANENT'] = False
