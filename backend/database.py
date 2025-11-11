@@ -31,7 +31,7 @@ def load_all_restaurants():
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                sql = "SELECT id, name, category, hours, avg_price FROM restaurants"
+                sql = "SELECT * FROM restaurants"
                 cursor.execute(sql)
                 rows = cursor.fetchall()
 
@@ -101,7 +101,7 @@ def load_restaurant_by_id(rest_id):
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                sql = "SELECT id, name, category, hours, avg_price FROM restaurants WHERE id = %s"
+                sql = "SELECT * FROM restaurants WHERE id = %s"
                 cursor.execute(sql, (rest_id,))
                 row = cursor.fetchone()
                 if not row:
@@ -132,7 +132,7 @@ def load_menu_for_restaurant(rest_id):
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
-                    "SELECT name, COALESCE(description, '') AS description, price_cents "
+                    "SELECT * "
                     "FROM menu_items WHERE restaurant_id = %s "
                     "ORDER BY name ASC"
                 )
