@@ -5,13 +5,7 @@ from dotenv import load_dotenv
 import psycopg2
 import psycopg2.extras
 
-load_dotenv()  # Load environment variables from .env file
-from dotenv import load_dotenv
-import psycopg2
-import psycopg2.extras
-
-load_dotenv()  # Load environment variables from .env file
-
+load_dotenv()
 # Read-only access for the web app layer (Postgres)
 DATABASE_URL = os.getenv("TB_DATABASE_URL")
 if not DATABASE_URL:
@@ -19,22 +13,10 @@ if not DATABASE_URL:
         "Environment variable TB_DATABASE_URL is not set. "
         "Set it to a valid Postgres URL (eg. postgresql://user:pass@host:port/db)."
     )
-# Read-only access for the web app layer (Postgres)
-DATABASE_URL = os.getenv("TB_DATABASE_URL")
-if not DATABASE_URL:
-    raise RuntimeError(
-        "Environment variable TB_DATABASE_URL is not set. "
-        "Set it to a valid Postgres URL (eg. postgresql://user:pass@host:port/db)."
-    )
-
 def _err_response(ex):
     error_message = str(sys.argv[0] + ': ')
     print(f"{error_message} {str(ex)}", file=sys.stderr)
     return [False, 'A server error occurred. Please contact the system administrator.']
-
-def _get_conn():
-    # Return a new psycopg2 connection. Caller should use context manager.
-    return psycopg2.connect(DATABASE_URL)
 
 def _get_conn():
     # Return a new psycopg2 connection. Caller should use context manager.
@@ -45,10 +27,6 @@ def load_all_restaurants():
     Return all restaurants with id, name, category, hours, avg_price.
     """
     try:
-        with _get_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                sql = "SELECT * FROM restaurants"
-                cursor.execute(sql)
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = "SELECT * FROM restaurants"
@@ -89,14 +67,10 @@ def restaurant_search(params):
                 # Use ILIKE for case-insensitive substring match in Postgres
                 sql = (
                     "SELECT * "
-                    "SELECT * "
                     "FROM restaurants "
                     "WHERE name ILIKE %s AND category ILIKE %s "
                     "ORDER BY name ASC"
-                    "WHERE name ILIKE %s AND category ILIKE %s "
-                    "ORDER BY name ASC"
                 )
-                cursor.execute(sql, (f"%{name}%", f"%{category}%"))
                 cursor.execute(sql, (f"%{name}%", f"%{category}%"))
                 rows = cursor.fetchall()
 
@@ -160,7 +134,6 @@ def load_menu_for_restaurant(rest_id):
                     "FROM menu_items WHERE restaurant_id = %s "
                     "ORDER BY name ASC"
                 )
-                cursor.execute(sql, (rest_id,))
                 cursor.execute(sql, (rest_id,))
                 rows = cursor.fetchall()
 
