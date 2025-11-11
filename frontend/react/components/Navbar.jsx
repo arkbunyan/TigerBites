@@ -1,6 +1,22 @@
 import React from "react";
 
 const Navbar = () => {
+  const handleLogoutApp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    try {
+      await fetch("/api/logout-app", { method: "POST" });
+    } catch (err) {
+      // ignore network errors but still redirect to logout page
+      console.error("logout-app failed:", err);
+    }
+    window.location.href = "/logout_app";
+  };
+
+  const handleLogoutCas = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    window.location.href = "/logoutcas";
+  };
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light px-3">
       <a className="navbar-brand" href="/">
@@ -41,12 +57,12 @@ const Navbar = () => {
             </a>
           </li>
           <li className="nav-item me-3">
-            <a className="nav-link" href="/logout_app">
+            <a className="nav-link" href="#" onClick={handleLogoutApp}>
               Logout of TigerBites
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="/logout_cas">
+            <a className="nav-link" href="#" onClick={handleLogoutCas}>
               Logout of CAS
             </a>
           </li>

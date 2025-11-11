@@ -20,6 +20,35 @@ _CAS_URL = 'https://fed.princeton.edu/cas/'
 
 #-----------------------------------------------------------------------
 
+@app.route('/api/getusername', methods=['GET'])
+def api_getusername():
+    if not is_authenticated():
+        flask.abort(403)
+    return flask.jsonify({"username": get_username()})
+
+#-----------------------------------------------------------------------
+
+@app.route('/api/profile', methods=['GET'])
+def api_profile():
+    if not is_authenticated():
+        flask.abort(403)
+    return flask.jsonify({
+        "user": get_user_info(),
+        "username": get_username(),
+        "firstname": get_firstname(),
+        "fullname": get_fullname(),
+        "email": get_email()
+    })
+
+#-----------------------------------------------------------------------
+
+@app.route('/api/logout-app', methods=['POST'])
+def api_logoutapp():
+    flask.session.clear()
+    return flask.jsonify({"status": "logged out"})
+
+#-----------------------------------------------------------------------
+
 @app.route('/logoutapp', methods=['GET'])
 def logoutapp():
 
@@ -159,5 +188,5 @@ def authenticate():
     # The user is authenticated, so store the user_info in
     # the session and return.
     flask.session['user_info'] = user_info
-    flask.abort(flask.redirect('/home'))
+    flask.abort(flask.redirect('/'))
 
