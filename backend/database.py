@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import psycopg2
 import psycopg2.extras
 
+load_dotenv()
 # Read-only access for the web app layer (Postgres)
 DATABASE_URL = os.getenv("TB_DATABASE_URL")
 if not DATABASE_URL:
