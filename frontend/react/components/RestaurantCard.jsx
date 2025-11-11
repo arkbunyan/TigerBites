@@ -1,10 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const RestaurantCard = ({ rest }) => {
   return (
     <div className="result">
       <h3>
-        <a href={`/restaurant/${rest.id}`}>{rest.name}</a>
+        <Link to={`/restaurants/${rest.id}`}>{rest.name}</Link>
       </h3>
 
       <p>{rest.category}</p>

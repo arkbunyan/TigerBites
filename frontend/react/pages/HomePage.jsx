@@ -11,7 +11,6 @@ export default function HomePage() {
       .then((data) => setData(data));
   }, []);
 
-  // Function to call search API
   const handleSearch = ({ name, category }) => {
     const params = new URLSearchParams();
     if (name) params.append("name", name);

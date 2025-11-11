@@ -21,7 +21,7 @@ flask_session.Session(app)
 
 # Test React
 @app.route('/', methods=['GET'])
-@app.route('/index', methods=['GET'])
+# @app.route('/<path:path>')
 def index():
     return flask.send_file('../frontend/react/index.html')
 
@@ -81,7 +81,7 @@ def search_results():
 
     return flask.jsonify({"restaurants": restaurants[1]})
 
-@app.route('/restaurants/<rest_id>', methods=['GET'])
+@app.route('/api/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
     ok_r, rest = database.load_restaurant_by_id(rest_id)
     if not ok_r:
