@@ -144,7 +144,7 @@ def load_menu_for_restaurant(rest_id):
                     items.append({
                         'name': row.get('name'),
                         'description': row.get('description'), 
-                        'avg_price': float(row.get('avg_price')) if row.get('avg_price') is not None else None,
+                        'price': float(row.get('avg_price')) if row.get('avg_price') is not None else None,
                     })
 
                 return [True, items]
