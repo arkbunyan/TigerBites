@@ -25,7 +25,7 @@ def index():
     return flask.send_file('../frontend/react/index.html')
 
 # Home Page
-@app.route('/home', methods=['GET'])
+@app.route('/api/home', methods=['GET'])
 def home():
     auth.authenticate()
     restaurants = database.load_all_restaurants()

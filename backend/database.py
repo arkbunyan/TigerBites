@@ -87,9 +87,6 @@ def restaurant_search(params):
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Use ILIKE for case-insensitive substring match in Postgres
-        with _get_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                # Use ILIKE for case-insensitive substring match in Postgres
                 sql = (
                     "SELECT * "
                     "SELECT * "
@@ -116,16 +113,6 @@ def restaurant_search(params):
                         'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
                         'latitude': row.get('latitude'),
                         'longitude': row.get('longitude')
-                        'id': (row['id']),
-                        'created_at': row['created_at'].isoformat(),
-                        'name': row['name'],
-                        'description': row['description'],
-                        'location': row['location'],
-                        'category': row['category'],
-                        'hours': row['hours'],
-                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'latitude': row['latitude'],
-                        'longitude': row['longitude']
                     }
                     response.append(entry)
 
@@ -166,8 +153,6 @@ def load_menu_for_restaurant(rest_id):
     Each item has: name, description, price_cents, price (formatted or None)
     """
     try:
-        with _get_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
