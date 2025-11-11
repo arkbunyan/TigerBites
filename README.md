@@ -18,8 +18,7 @@ To host website run:
 - pip install -r requirements.txt
 - npm install
 - npm run builddev
-- cd backend
-- python runserver.py [port#]
+- python -m backend.runserver [port #]
 
 ---
 
