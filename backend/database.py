@@ -38,16 +38,16 @@ def load_all_restaurants():
                 response = []
                 for row in rows:
                     entry = {
-                        'id': (row['id']),
-                        'created_at': row['created_at'].isoformat(),
-                        'name': row['name'],
-                        'description': row['description'],
-                        'location': row['location'],
-                        'category': row['category'],
-                        'hours': row['hours'],
-                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'latitude': row['latitude'],
-                        'longitude': row['longitude']
+                        'id': row.get('id'),
+                        'created_at': row.get('created_at').isoformat(),
+                        'name': row.get('name'),
+                        'description': row.get('description'), 
+                        'location': row.get('location'), 
+                        'category': row.get('category'), 
+                        'hours': row.get('hours'), 
+                        'avg_price': float(row.get('avg_price')), 
+                        'latitude': row.get('latitude'),
+                        'longitude': row.get('longitude')
                     }
                     response.append(entry)
 
@@ -79,16 +79,16 @@ def restaurant_search(params):
                 response = []
                 for row in rows:
                     entry = {
-                        'id': (row['id']),
+                        'id': row.get('id'),
                         'created_at': row['created_at'].isoformat(),
                         'name': row['name'],
                         'description': row['description'],
                         'location': row['location'],
-                        'category': row['category'],
-                        'hours': row['hours'],
-                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'latitude': row['latitude'],
-                        'longitude': row['longitude']
+                        'category': row.get('category'), 
+                        'hours': row.get('hours'), 
+                        'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
+                        'latitude': row.get('latitude'),
+                        'longitude': row.get('longitude')
                     }
                     response.append(entry)
 
@@ -108,16 +108,16 @@ def load_restaurant_by_id(rest_id):
                     return [False, 'Not found']
 
                 data = {
-                    'id': (row['id']),
-                        'created_at': row['created_at'].isoformat(),
-                        'name': row['name'],
-                        'description': row['description'],
-                        'location': row['location'],
-                        'category': row['category'],
-                        'hours': row['hours'],
-                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
-                        'latitude': row['latitude'],
-                        'longitude': row['longitude']
+                    'id': row.get('id'), 
+                    'created_at': row.get('created_at').isoformat(),
+                    'name': row.get('name'),
+                    'description': row.get('description'), 
+                    'location': row.get('location'), 
+                    'category': row.get('category'), 
+                    'hours': row.get('hours'), 
+                    'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
+                    'latitude': row.get('latitude'),
+                    'longitude': row.get('longitude')
                 }
                 return [True, data]
     except Exception as ex:
@@ -141,12 +141,10 @@ def load_menu_for_restaurant(rest_id):
 
                 items = []
                 for row in rows:
-                    cents = row['price_cents']
-                    price_str = None if cents is None else f"${cents/100:.2f}"
                     items.append({
-                        'name': row['name'],
-                        'description': row['description'],
-                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
+                        'name': row.get('name'),
+                        'description': row.get('description'), 
+                        'avg_price': float(row.get('avg_price')) if row.get('avg_price') is not None else None,
                     })
 
                 return [True, items]
