@@ -26,7 +26,7 @@ def index():
     return flask.send_file('../frontend/react/index.html')
 
 # Home Page
-@app.route('/home', methods=['GET'])
+@app.route('/api/home', methods=['GET'])
 def home():
     auth.authenticate()
     restaurants = database.load_all_restaurants()
@@ -68,7 +68,7 @@ def logout_app():
 def logout_cas():
     return flask.redirect('/logoutcas')
 
-@app.route('/search_results', methods=['GET'])
+@app.route('/api/search', methods=['GET'])
 def search_results():
     
     # Test Restaurant Data
