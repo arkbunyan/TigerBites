@@ -6,7 +6,19 @@ import psycopg2
 import psycopg2.extras
 
 load_dotenv()  # Load environment variables from .env file
+from dotenv import load_dotenv
+import psycopg2
+import psycopg2.extras
 
+load_dotenv()  # Load environment variables from .env file
+
+# Read-only access for the web app layer (Postgres)
+DATABASE_URL = os.getenv("TB_DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Environment variable TB_DATABASE_URL is not set. "
+        "Set it to a valid Postgres URL (eg. postgresql://user:pass@host:port/db)."
+    )
 # Read-only access for the web app layer (Postgres)
 DATABASE_URL = os.getenv("TB_DATABASE_URL")
 if not DATABASE_URL:
@@ -24,11 +36,19 @@ def _get_conn():
     # Return a new psycopg2 connection. Caller should use context manager.
     return psycopg2.connect(DATABASE_URL)
 
+def _get_conn():
+    # Return a new psycopg2 connection. Caller should use context manager.
+    return psycopg2.connect(DATABASE_URL)
+
 def load_all_restaurants():
     """
     Return all restaurants with id, name, category, hours, avg_price.
     """
     try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = "SELECT * FROM restaurants"
+                cursor.execute(sql)
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = "SELECT * FROM restaurants"
@@ -67,12 +87,19 @@ def restaurant_search(params):
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Use ILIKE for case-insensitive substring match in Postgres
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # Use ILIKE for case-insensitive substring match in Postgres
                 sql = (
+                    "SELECT * "
                     "SELECT * "
                     "FROM restaurants "
                     "WHERE name ILIKE %s AND category ILIKE %s "
                     "ORDER BY name ASC"
+                    "WHERE name ILIKE %s AND category ILIKE %s "
+                    "ORDER BY name ASC"
                 )
+                cursor.execute(sql, (f"%{name}%", f"%{category}%"))
                 cursor.execute(sql, (f"%{name}%", f"%{category}%"))
                 rows = cursor.fetchall()
 
@@ -89,6 +116,16 @@ def restaurant_search(params):
                         'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
                         'latitude': row.get('latitude'),
                         'longitude': row.get('longitude')
+                        'id': (row['id']),
+                        'created_at': row['created_at'].isoformat(),
+                        'name': row['name'],
+                        'description': row['description'],
+                        'location': row['location'],
+                        'category': row['category'],
+                        'hours': row['hours'],
+                        'avg_price': float(row['avg_price']) if row['avg_price'] is not None else None,
+                        'latitude': row['latitude'],
+                        'longitude': row['longitude']
                     }
                     response.append(entry)
 
@@ -131,11 +168,14 @@ def load_menu_for_restaurant(rest_id):
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
                     "SELECT * "
                     "FROM menu_items WHERE restaurant_id = %s "
                     "ORDER BY name ASC"
                 )
+                cursor.execute(sql, (rest_id,))
                 cursor.execute(sql, (rest_id,))
                 rows = cursor.fetchall()
 

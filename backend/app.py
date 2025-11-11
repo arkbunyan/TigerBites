@@ -19,45 +19,45 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SESSION_SQLALCHEMY'] = flask_sqlalchemy.SQLAlchemy(app)
 flask_session.Session(app)
 
+# Test React
+@app.route('/', methods=['GET'])
+# @app.route('/<path:path>')
+def index():
+    return flask.send_file('../frontend/react/index.html')
+
 # Home Page
 @app.route('/home', methods=['GET'])
-def home_page():
-    # Protected entrance to page
+def home():
     auth.authenticate()
-    # NOTE: We probably want a list of dicts here
-    # restaurants = database.get_restaurant_cards()
     restaurants = database.load_all_restaurants()
     firstname = auth.get_firstname()
-    print(restaurants)
+
     if restaurants[0] is False:
-        html_code = flask.render_template('error.html',
-            message=restaurants[1])
-        response = flask.make_response(html_code)
-        return response
-    html_code = flask.render_template('home.html',
-        restaurants=restaurants[1], firstname=firstname)
-    response = flask.make_response(html_code)
-    return response
+        return flask.jsonify({"error": restaurants[1]}), 400
+
+    return flask.jsonify({
+        "firstname": firstname,
+        "restaurants": restaurants[1]
+    })
+
 
 @app.route('/map_page', methods=['GET'])
-def map_page():
+def map():
     firstname = auth.get_firstname()
-    html_code = flask.render_template('map_page.html', firstname=firstname)
-    response = flask.make_response(html_code)
-    return response
+    return flask.jsonify({"firstname": firstname})
+
 
 @app.route('/profile_page', methods=['GET'])
-def profile_page():
+def profile():
     # Protected entrance to page
     auth.authenticate()
-    user = auth.get_user_info()
-    username = auth.get_username()
-    firstname = auth.get_firstname()
-    fullname = auth.get_fullname()
-    email = auth.get_email()
-    html_code = flask.render_template('profile_page.html', user=user, username=username, firstname=firstname, fullname=fullname, email=email)
-    response = flask.make_response(html_code)
-    return response
+    return flask.jsonify({
+        "user": auth.get_user_info(),
+        "username": auth.get_username(),
+        "firstname": auth.get_firstname(),
+        "fullname": auth.get_fullname(),
+        "email": auth.get_email()
+    })
 
 @app.route('/logout_app', methods=['GET'])
 def logout_app():
@@ -75,20 +75,14 @@ def search_results():
     name = flask.request.args.get('name', '')
     category = flask.request.args.get('category', '')
     restaurants = database.restaurant_search([name, category])
-    if restaurants[0] is False:
-        html_code = flask.render_template('error.html',
-            message=restaurants[1])
-        response = flask.make_response(html_code)
-        return response
 
-    html_code = flask.render_template('search_results.html', 
-        restaurants=restaurants[1])
-    response = flask.make_response(html_code)
-    return response
+    if not restaurants[0]:
+        return flask.jsonify({"error": restaurants[1]}), 400
 
-@app.route('/restaurants/<rest_id>', methods=['GET'])
+    return flask.jsonify({"restaurants": restaurants[1]})
+
+@app.route('/api/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
-
     ok_r, rest = database.load_restaurant_by_id(rest_id)
     if not ok_r:
         return flask.abort(404)
@@ -97,9 +91,7 @@ def restaurant_details(rest_id):
     if not ok_m:
         menu = []
 
-    html = flask.render_template('restaurant_details.html',
-                                 restaurant=rest, menu_items=menu)
-    return flask.make_response(html)
+    return flask.jsonify({"restaurant": rest, "menu": menu})
 
 # @app.route('/protected')
 # def protected():
@@ -107,7 +99,7 @@ def restaurant_details(rest_id):
 #     auth.authenticate()
 #     return f"Hello {auth.get_username()}! This is protected."
 
-@app.route('/api/data')
+@app.route('/data')
 def api_data():
     if not auth.is_authenticated():
         flask.abort(403)

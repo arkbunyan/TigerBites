@@ -1,0 +1,27 @@
+{
+    "name": "tigerbites",
+    "version": "1.0.0",
+    "description": "Tiger Bites",
+    "scripts": {
+        "builddev": "webpack --mode=development",
+        "buildprod": "webpack --mode=production"
+    },
+    "author": "Leah Shefferman, Evan Walsh, Ark Bunyan, Shruti Mandrekar",
+    "dependencies": {
+        "@babel/core": "7.25.9",
+        "@babel/preset-env": "7.25.9",
+        "@babel/preset-react": "7.25.9",
+        "babel-loader": "9.2.1",
+        "bootstrap": "^5.3.8",
+        "react": "18.3.1",
+        "react-bootstrap": "^2.10.10",
+        "react-dom": "18.3.1",
+        "react-router-dom": "^7.9.5",
+        "webpack": "5.97.1",
+        "webpack-cli": "6.0.1"
+    },
+    "devDependencies": {
+        "css-loader": "^7.1.2",
+        "style-loader": "^4.0.0"
+    }
+}
