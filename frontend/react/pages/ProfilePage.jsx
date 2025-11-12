@@ -62,8 +62,11 @@ export default function ProfilePage() {
     <div className="profile-page container py-3">
       <h1>Profile</h1>
       <UserProfile user={user} />
-      
-      <div className="favorite-cuisine-section mt-4 p-3 border rounded" style={{ backgroundColor: "#f8f9fa" }}>
+
+      <div
+        className="favorite-cuisine-section mt-4 p-3 border rounded"
+        style={{ backgroundColor: "#f8f9fa" }}
+      >
         <h3>Favorite Cuisine</h3>
         {editingCuisine ? (
           <div className="input-group mb-2">
@@ -74,7 +77,13 @@ export default function ProfilePage() {
               onChange={(e) => setFavoriteCuisine(e.target.value)}
               placeholder="e.g., Italian, Mexican, Asian..."
             />
-            <button className="btn btn-success" onClick={handleSaveCuisine}>
+            <button
+              className="btn"
+              style={{
+                backgroundColor: "#FF5F0D",
+              }}
+              onClick={handleSaveCuisine}
+            >
               Save
             </button>
             <button
@@ -90,7 +99,8 @@ export default function ProfilePage() {
               <strong>{favoriteCuisine || "Not set"}</strong>
             </p>
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-sm"
+              style={{ backgroundColor: "#FF5F0D" }}
               onClick={() => setEditingCuisine(true)}
             >
               Edit

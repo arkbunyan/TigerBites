@@ -7,29 +7,46 @@ const Header = () => {
   // Fetch user info on component mount
   useEffect(() => {
     fetch("/api/profile")
-      .then((res) => {
-        if (res.ok) return res.json();
-        return null;
-      })
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => setUser(data))
       .catch(() => setUser(null));
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => setDatetime(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
 
-  let greeting = "Welcome to Tiger Bites!";
+  const greeting = "TigerBites";
 
   return (
-    <div className="header-container">
-      <h1>{greeting}</h1>
-      <div className="header-info">
-        {user && (
-          <div className="user-info">
-            <span>Welcome {user.firstname || user.username || ''}!</span>
+    <header
+      className="py-4 mb-3 shadow-sm border-bottom"
+      style={{
+        backgroundColor: "#FF5F0D",
+      }}
+    >
+      <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <h1 className="display-5 fw-bold text-dark mb-2 mb-md-0">{greeting}</h1>
+
+        <div className="text-end">
+          {user ? (
+            <div className="fw-semibold text-dark">
+              Welcome, {user.firstname || user.username || "Guest"}!
+            </div>
+          ) : (
+            <div className="text-muted fst-italic">Welcome, Guest!</div>
+          )}
+          <div className="text-dark small">
+            {datetime.toLocaleString("en-US", {
+              weekday: "short",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
           </div>
-        )}
+        </div>
       </div>
-      <hr />
-    </div>
+    </header>
   );
 };
 

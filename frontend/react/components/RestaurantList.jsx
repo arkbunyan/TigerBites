@@ -7,11 +7,15 @@ const RestaurantList = ({ restaurants }) => {
   }
 
   return (
-    <section className="list">
-      <h2>Restaurants</h2>
-      {restaurants.map((rest) => (
-        <RestaurantCard key={rest.id} rest={rest} />
-      ))}
+    <section className="container mt-4">
+      <h2 className="mb-3">Restaurants</h2>
+      <div className="row">
+        {restaurants.map((rest) => (
+          <div key={rest.id} className="col-md-4 col-sm-6 mb-3">
+            <RestaurantCard rest={rest} />
+          </div>
+        ))}
+      </div>
     </section>
   );
 };

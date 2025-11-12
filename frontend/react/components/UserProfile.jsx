@@ -27,7 +27,7 @@ const UserProfile = ({ user }) => {
           ))}
         </ul>
       ) : (
-        <p>No menu yet.</p>
+        <p>No entries yet.</p>
       )}
     </div>
   );
