@@ -220,3 +220,128 @@ def update_favorite_cuisine(username, favorite_cuisine):
                 return [False, 'User not found']
     except Exception as ex:
         return _err_response(ex)
+    
+def upsert_review(rest_id, username, rating, comment):
+    """
+    Insert or update a review for a restaurant by a user.
+    Gets user_id from username (netid), then inserts/updates review.
+    Returns [True, review_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # First get the user_id from netid
+                cursor.execute("SELECT id FROM public.users WHERE netid = %s", (username,))
+                user_row = cursor.fetchone()
+                if not user_row:
+                    return [False, 'User not found']
+                
+                user_id = user_row['id']
+                
+                # Insert or update the review
+                sql = """
+                INSERT INTO public.reviews (restaurant_id, user_id, rating, comment)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id, restaurant_id, user_id, rating, comment, created_at
+                """
+                cursor.execute(sql, (rest_id, user_id, rating, comment))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    review_data = dict(row)
+                    review_data['created_at'] = review_data['created_at'].isoformat()
+                    review_data['user_id'] = str(review_data['user_id'])
+                    review_data['restaurant_id'] = str(review_data['restaurant_id'])
+                    review_data['id'] = str(review_data['id'])
+                    return [True, review_data]
+                return [False, 'Failed to insert review']
+    except Exception as ex:
+        return _err_response(ex)
+
+def get_reviews_by_restaurant(rest_id):
+    """
+    Get all reviews for a specific restaurant with user info.
+    Returns [True, reviews_list] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                SELECT r.id, r.restaurant_id, r.rating, r.comment, r.created_at,
+                       u.netid as username, u.firstname, u.fullname
+                FROM public.reviews r
+                JOIN public.users u ON r.user_id = u.id
+                WHERE r.restaurant_id = %s
+                ORDER BY r.created_at DESC
+                """
+                cursor.execute(sql, (rest_id,))
+                rows = cursor.fetchall()
+                
+                reviews = []
+                for row in rows:
+                    review = dict(row)
+                    review['created_at'] = review['created_at'].isoformat()
+                    review['id'] = str(review['id'])
+                    review['restaurant_id'] = str(review['restaurant_id'])
+                    reviews.append(review)
+                
+                return [True, reviews]
+    except Exception as ex:
+        return _err_response(ex)
+
+def get_reviews_by_user(username):
+    """
+    Get all reviews by a specific user (by netid) with restaurant info.
+    Returns [True, reviews_list] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                SELECT r.id, r.restaurant_id, r.rating, r.comment, r.created_at,
+                       rest.name as restaurant_name, rest.category
+                FROM public.reviews r
+                JOIN public.users u ON r.user_id = u.id
+                JOIN public.restaurants rest ON r.restaurant_id = rest.id
+                WHERE u.netid = %s
+                ORDER BY r.created_at DESC
+                """
+                cursor.execute(sql, (username,))
+                rows = cursor.fetchall()
+                
+                reviews = []
+                for row in rows:
+                    review = dict(row)
+                    review['created_at'] = review['created_at'].isoformat()
+                    review['id'] = str(review['id'])
+                    review['restaurant_id'] = str(review['restaurant_id'])
+                    reviews.append(review)
+                
+                return [True, reviews]
+    except Exception as ex:
+        return _err_response(ex)
+
+def delete_review(review_id, username):
+    """
+    Delete a review by id, but only if it belongs to the given user.
+    Returns [True, None] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                DELETE FROM public.reviews r
+                USING public.users u
+                WHERE r.id = %s AND r.user_id = u.id AND u.netid = %s
+                RETURNING r.id
+                """
+                cursor.execute(sql, (review_id, username))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    return [True, None]
+                return [False, 'Review not found or unauthorized']
+    except Exception as ex:
+        return _err_response(ex)

@@ -10,7 +10,7 @@ const UserProfile = ({ user }) => {
         {user.email} {user.phone ? `· ${user.phone}` : ""}
       </p>
 
-      <h3>Favorite Restaurants</h3>
+      {/* <h3>Favorite Restaurants</h3>
       {user.favoriteRestaurants && user.favoriteRestaurants.length > 0 ? (
         <ul>
           {user.favoriteRestaurants.map((item) => (
@@ -28,7 +28,7 @@ const UserProfile = ({ user }) => {
         </ul>
       ) : (
         <p>No entries yet.</p>
-      )}
+      )} */}
     </div>
   );
 };

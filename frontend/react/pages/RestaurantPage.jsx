@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from "react";
 import RestaurantDetails from "../components/RestaurantDetails.jsx";
+import ReviewForm from "../components/ReviewForm.jsx";
+import ReviewList from "../components/ReviewList.jsx";
 import { useParams } from "react-router-dom";
 
 const RestaurantPage = () => {
   const { restId } = useParams();
   const [restaurant, setRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [currentUsername, setCurrentUsername] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Fetch restaurant and menu
     fetch(`/api/restaurants/${restId}`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -18,19 +23,74 @@ const RestaurantPage = () => {
       .then((data) => {
         setRestaurant(data.restaurant);
         setMenuItems(data.menu);
-        setLoading(false);
       })
       .catch((err) => {
         console.error(err);
         setError("Failed to load restaurant");
-        setLoading(false);
       });
+
+    // Fetch reviews
+    fetch(`/api/restaurants/${restId}/reviews`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.reviews) {
+          setReviews(data.reviews);
+        }
+      })
+      .catch((err) => console.error("Failed to load reviews:", err));
+
+    // Fetch current user
+    fetch("/api/profile", { credentials: "include" })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (data) setCurrentUsername(data.username);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [restId]);
+
+  const handleReviewSubmitted = (newReview) => {
+    // Refresh reviews after submission
+    fetch(`/api/restaurants/${restId}/reviews`, { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.reviews) {
+          setReviews(data.reviews);
+        }
+      })
+      .catch((err) => console.error("Failed to reload reviews:", err));
+  };
+
+  const handleDeleteReview = (reviewId) => {
+    setReviews(reviews.filter((r) => r.id !== reviewId));
+  };
 
   if (loading) return <p>Loading restaurant...</p>;
   if (error) return <p>{error}</p>;
 
-  return <RestaurantDetails restaurant={restaurant} menuItems={menuItems} />;
+  return (
+    <div>
+      <RestaurantDetails restaurant={restaurant} menuItems={menuItems} />
+      
+      <div className="container mt-4">
+        <hr />
+        {currentUsername && (
+          <ReviewForm
+            restaurantId={restId}
+            onReviewSubmitted={handleReviewSubmitted}
+          />
+        )}
+        <ReviewList
+          reviews={reviews}
+          currentUsername={currentUsername}
+          onDeleteReview={handleDeleteReview}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default RestaurantPage;

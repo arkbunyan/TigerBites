@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import UserProfile from "../components/UserProfile.jsx";
+import ReviewList from "../components/ReviewList.jsx";
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [favoriteCuisine, setFavoriteCuisine] = useState("");
   const [editingCuisine, setEditingCuisine] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [currentUsername, setCurrentUsername] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updateMessage, setUpdateMessage] = useState("");
@@ -20,10 +23,10 @@ export default function ProfilePage() {
         // Map backend response to the simple shape expected by UserProfile
         const simpleUser = {
           name: data.fullname || data.firstname || data.username || "",
-          email: data.email || "",
-          favoriteRestaurants: data.favoriteRestaurants || [],
+          email: data.email || ""
         };
         setUser(simpleUser);
+        setCurrentUsername(data.username);
         setFavoriteCuisine(data.favorite_cuisine || "");
         setLoading(false);
       })
@@ -32,6 +35,19 @@ export default function ProfilePage() {
         setError("Failed to load profile");
         setLoading(false);
       });
+
+    // Fetch user's reviews
+    fetch("/api/users/reviews", { credentials: "same-origin" })
+      .then((res) => {
+        if (res.ok) return res.json();
+        return null;
+      })
+      .then((data) => {
+        if (data && data.reviews) {
+          setReviews(data.reviews);
+        }
+      })
+      .catch((err) => console.error("Failed to load reviews:", err));
   }, []);
 
   const handleSaveCuisine = async () => {
@@ -53,6 +69,10 @@ export default function ProfilePage() {
       setUpdateMessage("Failed to update favorite cuisine");
       setTimeout(() => setUpdateMessage(""), 3000);
     }
+  };
+
+  const handleDeleteReview = (reviewId) => {
+    setReviews(reviews.filter((r) => r.id !== reviewId));
   };
 
   if (loading) return <p>Loading profile...</p>;
@@ -112,6 +132,15 @@ export default function ProfilePage() {
             {updateMessage}
           </div>
         )}
+      </div>
+
+      <div className="my-reviews-section mt-4">
+        <h3>My Reviews</h3>
+        <ReviewList
+          reviews={reviews}
+          currentUsername={currentUsername}
+          onDeleteReview={handleDeleteReview}
+        />
       </div>
     </div>
   );

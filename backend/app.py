@@ -86,6 +86,53 @@ def restaurant_details(rest_id):
 
     return flask.jsonify({"restaurant": rest, "menu": menu})
 
+# Review endpoints
+@app.route('/api/restaurants/<rest_id>/reviews', methods=['GET'])
+def get_restaurant_reviews(rest_id):
+    ok, reviews = database.get_reviews_by_restaurant(rest_id)
+    if not ok:
+        return flask.jsonify({"error": reviews}), 400
+    return flask.jsonify({"reviews": reviews})
+
+@app.route('/api/restaurants/<rest_id>/reviews', methods=['POST'])
+def create_review(rest_id):
+    auth.authenticate()
+    data = flask.request.get_json()
+    if not data:
+        return flask.jsonify({"error": "No data provided"}), 400
+    
+    rating = data.get('rating')
+    comment = data.get('comment', '')
+    
+    if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+        return flask.jsonify({"error": "Rating must be an integer between 1 and 5"}), 400
+    
+    username = auth.get_username()
+    ok, review = database.upsert_review(rest_id, username, rating, comment)
+    
+    if not ok:
+        return flask.jsonify({"error": review}), 400
+    
+    return flask.jsonify({"review": review}), 201
+
+@app.route('/api/users/reviews', methods=['GET'])
+def get_user_reviews():
+    auth.authenticate()
+    username = auth.get_username()
+    ok, reviews = database.get_reviews_by_user(username)
+    if not ok:
+        return flask.jsonify({"error": reviews}), 400
+    return flask.jsonify({"reviews": reviews})
+
+@app.route('/api/reviews/<review_id>', methods=['DELETE'])
+def delete_user_review(review_id):
+    auth.authenticate()
+    username = auth.get_username()
+    ok, result = database.delete_review(review_id, username)
+    if not ok:
+        return flask.jsonify({"error": result}), 400
+    return flask.jsonify({"message": "Review deleted"}), 200
+
 # @app.route('/protected')
 # def protected():
 #     # Force CAS authentication (will redirect to CAS if needed)

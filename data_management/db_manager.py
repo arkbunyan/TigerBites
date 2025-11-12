@@ -88,6 +88,22 @@ def create_users_table():
         cur.execute(ddl)
         conn.commit()
 
+def create_reviews_table():
+    ddl = """
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    CREATE TABLE IF NOT EXISTS public.reviews (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
+        created_at timestamptz NOT NULL DEFAULT now(),
+        restaurant_id uuid REFERENCES public.restaurants(id),
+        user_id uuid REFERENCES public.users(id),
+        rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT
+    );
+    """
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(ddl)
+        conn.commit()
+
 
 def ensure_restaurants_uniqueness():
     # Avoid duplicates on repeated imports
@@ -199,5 +215,6 @@ if __name__ == "__main__":
     create_restaurants_table()
     create_menu_items_table()
     create_users_table()
+    create_reviews_table()
     ensure_restaurants_uniqueness()
     print("Tables ensured.")
