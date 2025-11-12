@@ -43,9 +43,11 @@ def load_all_restaurants():
                         'location': row.get('location'), 
                         'category': row.get('category'), 
                         'hours': row.get('hours'), 
-                        'avg_price': float(row.get('avg_price')), 
+                        'avg_price': float(row.get('avg_price')) if row.get('avg_price') is not None else None, 
                         'latitude': row.get('latitude'),
-                        'longitude': row.get('longitude')
+                        'longitude': row.get('longitude'),
+                        'picture': row.get('picture'),
+                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                     }
                     response.append(entry)
 
@@ -86,7 +88,9 @@ def restaurant_search(params):
                         'hours': row.get('hours'), 
                         'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
                         'latitude': row.get('latitude'),
-                        'longitude': row.get('longitude')
+                        'longitude': row.get('longitude'),
+                        'picture': row.get('picture'),
+                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                     }
                     response.append(entry)
 
@@ -115,7 +119,9 @@ def load_restaurant_by_id(rest_id):
                     'hours': row.get('hours'), 
                     'avg_price': float(row.get('avg_price')) if row['avg_price'] is not None else None,
                     'latitude': row.get('latitude'),
-                    'longitude': row.get('longitude')
+                    'longitude': row.get('longitude'),
+                    'picture': row.get('picture'),
+                    'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                 }
                 return [True, data]
     except Exception as ex:

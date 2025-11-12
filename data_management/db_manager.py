@@ -45,7 +45,9 @@ def create_restaurants_table():
         category    TEXT,
         avg_price   DOUBLE PRECISION,
         latitude    DOUBLE PRECISION,
-        longitude   DOUBLE PRECISION
+        longitude   DOUBLE PRECISION,
+        picture     TEXT,
+        yelp_rating DOUBLE PRECISION
     );
     """
     with get_conn() as conn, conn.cursor() as cur:
@@ -129,7 +131,7 @@ def ensure_restaurants_uniqueness():
 def insert_restaurant(restaurant_data, menu_data=None):
     """
     restaurant_data: dict with keys
-      name, description, location, hours, category, avg_price, latitude, longitude
+      name, description, location, hours, category, avg_price, latitude, longitude, picture (optional), yelp_rating (optional)
     menu_data: list of dicts with keys name, description, avg_price (optional)
     """
     if menu_data is None:
@@ -137,17 +139,19 @@ def insert_restaurant(restaurant_data, menu_data=None):
 
     upsert = """
         INSERT INTO public.restaurants
-            (name, description, location, hours, category, avg_price, latitude, longitude)
+            (name, description, location, hours, category, avg_price, latitude, longitude, picture, yelp_rating)
         VALUES
             (%(name)s, %(description)s, %(location)s, %(hours)s, %(category)s,
-             %(avg_price)s, %(latitude)s, %(longitude)s)
+             %(avg_price)s, %(latitude)s, %(longitude)s, %(picture)s, %(yelp_rating)s)
         ON CONFLICT (name, location) DO UPDATE SET
             description = EXCLUDED.description,
             hours       = EXCLUDED.hours,
             category    = EXCLUDED.category,
             avg_price   = EXCLUDED.avg_price,
             latitude    = EXCLUDED.latitude,
-            longitude   = EXCLUDED.longitude
+            longitude   = EXCLUDED.longitude,
+            picture     = COALESCE(EXCLUDED.picture, public.restaurants.picture),
+            yelp_rating = COALESCE(EXCLUDED.yelp_rating, public.restaurants.yelp_rating)
         RETURNING id;
     """
     with get_conn() as conn, conn.cursor() as cur:
@@ -176,7 +180,7 @@ def insert_restaurant(restaurant_data, menu_data=None):
 def bulk_insert_restaurants(rows):
     """
     rows: list[dict] with keys
-      name, description, location, hours, category, avg_price, latitude, longitude
+      name, description, location, hours, category, avg_price, latitude, longitude, picture (optional), yelp_rating (optional)
     Returns count of processed rows.
     """
     if not rows:
@@ -191,6 +195,8 @@ def bulk_insert_restaurants(rows):
         "avg_price",
         "latitude",
         "longitude",
+        "picture",
+        "yelp_rating",
     ]
     sql = f"""
         INSERT INTO public.restaurants ({",".join(cols)})
@@ -201,7 +207,9 @@ def bulk_insert_restaurants(rows):
             category    = EXCLUDED.category,
             avg_price   = EXCLUDED.avg_price,
             latitude    = EXCLUDED.latitude,
-            longitude   = EXCLUDED.longitude;
+            longitude   = EXCLUDED.longitude,
+            picture     = COALESCE(EXCLUDED.picture, public.restaurants.picture),
+            yelp_rating = COALESCE(EXCLUDED.yelp_rating, public.restaurants.yelp_rating);
     """
     values = [tuple(r.get(c) for c in cols) for r in rows]
 
