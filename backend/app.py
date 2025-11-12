@@ -46,17 +46,11 @@ def map():
     return flask.jsonify({"firstname": firstname})
 
 
-@app.route('/profile_page', methods=['GET'])
-def profile():
-    # Protected entrance to page
+@app.route('/profile', methods=['GET'])
+def profile_page():
+    # Serve React app for client-side profile routing
     auth.authenticate()
-    return flask.jsonify({
-        "user": auth.get_user_info(),
-        "username": auth.get_username(),
-        "firstname": auth.get_firstname(),
-        "fullname": auth.get_fullname(),
-        "email": auth.get_email()
-    })
+    return flask.send_file('../frontend/react/index.html')
 
 @app.route('/logout_app', methods=['GET'])
 def logout_app():
@@ -103,12 +97,6 @@ def api_data():
     if not auth.is_authenticated():
         flask.abort(403)
     return flask.jsonify({"user": auth.get_username(), "data": []})
-
-@app.route('/', methods=['GET'])
-def landing_page():
-    html_code = flask.render_template('welcome_login.html')
-    response = flask.make_response(html_code)
-    return response
 
 
 if __name__ == "__main__":

@@ -24,7 +24,7 @@ const Header = () => {
       <div className="header-info">
         {user && (
           <div className="user-info">
-            <span>Signed in as {user.firstname || user.username || ''}</span>
+            <span>Welcome {user.firstname || user.username || ''}!</span>
           </div>
         )}
       </div>

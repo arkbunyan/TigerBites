@@ -77,7 +77,10 @@ def create_users_table():
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at timestamptz NOT NULL DEFAULT now(),
         netid TEXT,
-        name  TEXT,
+        fullname  TEXT,
+        email TEXT,
+        firstname TEXT,
+        favorite_cuisine TEXT,
         fav_restaurant uuid REFERENCES public.restaurants(id)
     );
     """

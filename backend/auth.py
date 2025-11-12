@@ -12,6 +12,7 @@ import re
 import json
 import flask
 from backend.top import app
+from backend import database
 
 #-----------------------------------------------------------------------
 
@@ -32,12 +33,57 @@ def api_getusername():
 def api_profile():
     if not is_authenticated():
         flask.abort(403)
+    username = get_username()
+    ok, user_data = database.get_user_by_username(username)
+    if not ok:
+        # User not found in DB, return session data
+        return flask.jsonify({
+            "user": get_user_info(),
+            "username": username,
+            "firstname": get_firstname(),
+            "fullname": get_fullname(),
+            "email": get_email(),
+            "favorite_cuisine": ""
+        })
+    # Return data from database (includes favorite_cuisine)
     return flask.jsonify({
         "user": get_user_info(),
-        "username": get_username(),
-        "firstname": get_firstname(),
-        "fullname": get_fullname(),
-        "email": get_email()
+        "username": user_data.get('netid', ''),
+        "firstname": user_data.get('firstname', ''),
+        "fullname": user_data.get('fullname', ''),
+        "email": user_data.get('email', ''),
+        "favorite_cuisine": user_data.get('favorite_cuisine', '')
+    })
+
+#-----------------------------------------------------------------------
+
+@app.route('/api/profile', methods=['PUT', 'POST'])
+def api_profile_update():
+    if not is_authenticated():
+        flask.abort(403)
+    
+    data = flask.request.get_json()
+    print(f"DEBUG: PUT /api/profile received data: {data}")
+    if not data:
+        print("DEBUG: No JSON data provided")
+        return flask.jsonify({"error": "No data provided"}), 400
+    
+    favorite_cuisine = data.get('favorite_cuisine', '')
+    username = get_username()
+    print(f"DEBUG: Updating {username} with cuisine: {favorite_cuisine}")
+    
+    ok, user_data = database.update_favorite_cuisine(username, favorite_cuisine)
+    print(f"DEBUG: Update result - ok: {ok}, data: {user_data}")
+    if not ok:
+        print(f"DEBUG: Error updating user: {user_data}")
+        return flask.jsonify({"error": user_data}), 400
+    
+    return flask.jsonify({
+        "username": user_data.get('netid', ''),
+        "firstname": user_data.get('firstname', ''),
+        "fullname": user_data.get('fullname', ''),
+        "email": user_data.get('email', ''),
+        "favorite_cuisine": user_data.get('favorite_cuisine', '')
     })
 
 #-----------------------------------------------------------------------
@@ -165,8 +211,17 @@ def get_email():
 def authenticate():
 
     # If the user_info is in the session, then the user was
-    # authenticated previously.  So return.
+    # authenticated previously. Ensure they're in the database and return.
     if 'user_info' in flask.session:
+        username = get_username()
+        ok, user_data = database.get_user_by_username(username)
+        if not ok:
+            # User not in DB, insert them now
+            email = get_email()
+            firstname = get_firstname()
+            fullname = get_fullname()
+            print(f"DEBUG authenticate(): User {username} not in DB, inserting now")
+            database.upsert_user(username, email, firstname, fullname)
         return
 
     # If the request does not contain a login ticket, then redirect
@@ -188,5 +243,16 @@ def authenticate():
     # The user is authenticated, so store the user_info in
     # the session and return.
     flask.session['user_info'] = user_info
-    flask.abort(flask.redirect('/'))
+    
+    # Also store the user in the database
+    username = get_username()
+    email = get_email()
+    firstname = get_firstname()
+    fullname = get_fullname()
+    print(f"DEBUG authenticate(): Inserting user - username: {username}, email: {email}, firstname: {firstname}, fullname: {fullname}")
+    ok, result = database.upsert_user(username, email, firstname, fullname)
+    print(f"DEBUG authenticate(): upsert_user result - ok: {ok}, result: {result}")
+    
+    # Redirect to home page (stripping the ticket parameter)
+    flask.abort(flask.redirect(strip_ticket(flask.request.url)))
 

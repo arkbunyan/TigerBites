@@ -148,3 +148,75 @@ def load_menu_for_restaurant(rest_id):
                 return [True, items]
     except Exception as ex:
         return _err_response(ex)
+
+def upsert_user(username, email, firstname, fullname):
+    """
+    Insert or update a user record with CAS login info.
+    Username is stored as 'netid'. Returns [True, user_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                INSERT INTO public.users (netid, email, firstname, fullname)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (netid) DO UPDATE
+                SET email = EXCLUDED.email, 
+                    firstname = EXCLUDED.firstname, 
+                    fullname = EXCLUDED.fullname
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine
+                """
+                print(f"DEBUG upsert_user: Executing SQL with values - netid: {username}, email: {email}, firstname: {firstname}, fullname: {fullname}")
+                cursor.execute(sql, (username, email, firstname, fullname))
+                row = cursor.fetchone()
+                print(f"DEBUG upsert_user: Query result row: {row}")
+                conn.commit()
+                
+                if row:
+                    return [True, dict(row)]
+                return [False, 'Failed to insert/update user']
+    except Exception as ex:
+        print(f"DEBUG upsert_user: Exception occurred: {ex}")
+        return _err_response(ex)
+
+def get_user_by_username(username):
+    """
+    Retrieve a user record by netid (username).
+    Returns [True, user_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine FROM public.users WHERE netid = %s"
+                cursor.execute(sql, (username,))
+                row = cursor.fetchone()
+                
+                if row:
+                    return [True, dict(row)]
+                return [False, 'User not found']
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_favorite_cuisine(username, favorite_cuisine):
+    """
+    Update a user's favorite cuisine by netid (username).
+    Returns [True, user_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                UPDATE public.users 
+                SET favorite_cuisine = %s
+                WHERE netid = %s
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine
+                """
+                cursor.execute(sql, (favorite_cuisine, username))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    return [True, dict(row)]
+                return [False, 'User not found']
+    except Exception as ex:
+        return _err_response(ex)
