@@ -7,6 +7,21 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
   return (
     <div className="container my-5">
       <div className="card shadow-sm border-0 mb-4">
+        {restaurant.picture && (
+        <img
+          src={restaurant.picture}
+          className="card-img-top"
+          style={{ 
+            height: "350px",
+            width: "100%",
+            borderTopLeftRadius: "12px", 
+            borderTopRightRadius: "12px",
+            objectFit: "cover",
+ 
+          }}
+          
+        />
+      )}
         <div className="card-body">
           <h2
             className="card-title fw-bold"

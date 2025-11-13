@@ -4,6 +4,15 @@ import { Link } from "react-router-dom";
 const RestaurantCard = ({ rest }) => {
   return (
     <div className="card shadow-sm mb-4" style={{ borderRadius: "12px" }}>
+      {rest.picture && (
+        <img
+          src={rest.picture}
+          alt={rest.name}
+          className="card-img-top"
+          style={{ borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }}
+        />
+      )}
+
       <div className="card-body">
         <h5 className="card-title">
           <Link
