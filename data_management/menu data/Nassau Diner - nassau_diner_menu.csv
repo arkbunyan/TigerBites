@@ -1,0 +1,102 @@
+Item,Price,Description
+English Breakfast,18,"two eggs, bacon, sausage, black pudding, roasted mushrooms, griddled tomato, baked beans, sourdough toast (*DF)"
+French Breakfast,17,"croque madame: grilled ham & cheese on brioche, bechamel sauce, fried egg, mixed greens salad"
+Israeli Breakfast,19,"shakshouka, farmer’s cheese, israeli salad, laffa bread"
+Scandinavian Breakfast,20,"toasted rye, farmer's cheese, smoked salmon, scrambled eggs, tomatoes, cucumber & dill"
+Hawaiian Breakfast,18,"kimchi fried rice, spam, two eggs, furikake (DF, GF)"
+Jersey Breakfast,16,"pork roll, egg & cheese on a brioche bun, breakfast potatoes"
+Mexican Breakfast,18,"chorizo chilaquiles, chihuahua cheese, two eggs"
+Upper West Side Breakfast,22,"smoked salmon, smoked whitefish salad, hard boiled egg, tomato, pickled red onion, capers, cream cheese, toasted bagel"
+Breakfast Meats,6,bacon • sausage links • turkey sausage links ham • scrapple • pork roll • spam
+Three Egg Omelets,18,"choice of three fillings, potatoes, toast (*DF)"
+Our Signature Pancakes (V),12,pancakes
+S'mores Pancakes,15,"chocolate chips, marshmallows, graham streusel (V)"
+Chocolate Chip Pancakes (V),14,
+Blueberry Pancakes (V),14,
+Banana Walnut Pancakes (V),14,
+Apple Pie Pancakes,15,"sautéed cinnamon apples, graham streusel (V)"
+Buttermilk Waffle,14,"macerated berries, syrup (V)"
+Chicken & Waffle,19,"battered chicken fingers, nashville hot sauce, butter"
+Biscuits & Gravy,14,"two buttermilk biscuits, sausage gravy"
+French Toast,14,"brioche soaked in orange blossom custard, macerated berries, syrup (V)"
+Two Eggs,17,"breakfast potatoes, choice of meat, toast (*DF)"
+One-Eyed Jack,17,"two slices of brioche with two eggs fried inside, served with choice of meat and syrup"
+Cheesesteak Benedict,19,"split roll, cheesesteak, poached eggs, American cheese sauce, breakfast potatoes"
+Classic Benedict,18,"english muffin, Canadian bacon, poached eggs, hollandaise, breakfast potatoes"
+Smoked Salmon Benedict,22,"english muffin, poached eggs, hollandaise, dill, breakfast potatoes"
+Chicken Fried Steak & Eggs,21,"two eggs, cream gravy, breakfast potatoes"
+Veggie Benedict,17,"english muffin, sautéed spinach, avocado, tomato, poached eggs, hollandaise, breakfast potatoes (V)"
+Corned Beef Hash,19,"two eggs, breakfast potatoes (*DF, *GF)"
+Steak & Eggs,24,"two eggs, breakfast potatoes (*DF, *GF)"
+Southern Benedict,19,"biscuit, breakfast sausage, cream gravy, poached eggs, breakfast potatoes"
+Avocado Toast,14,"grilled sourdough, sliced avocado, everything spice, pickled onion & carrot, mixed greens salad, seasonal fruit (VE)"
+Soup of the Moment,9,ask your server
+Chicken Soup,9,with noodles or matzo ball (DF)
+Caesar Salad,13,"romaine, croutons, grana, creamy caesar dressing"
+Chopped Salad,15,"roasted, grilled, and pickled vegetables, farmer's cheese, toasted almonds, choice of dressing (V, GF)"
+Cobb Salad,17,"hard boiled egg, tomato, bacon, blue cheese, avocado, scallion, chicken, choice of dressing (GF)"
+Greek Salad,15,"tomato, cucumber, pepper, olive, romaine, feta, red onion vinaigrette (V, GF)"
+Three Salads,19,"chicken salad, tuna salad, egg salad, tomato, lettuce, crudites, choice of bread (DF)"
+Mixed Greens Salad,11,"tomato, cucumber, radish, pickled carrot & onion, choice of dressing (VE, GF)"
+Disco Fries or Tots,12,"brown gravy, american cheese sauce"
+Onion Rings,10,horseradish mayo
+Chicken Wings,15,"6 wings, choice of maple buffalo, honey garlic, sweet chili, bbq, or sriracha lime"
+Mozzarella Sticks,13,marinara sauce
+Chicken Fingers & Fries,17,"battered, bbq & buttermilk ranch"
+Zucchini Fries,12,marinara sauce
+Hotel California Burger,18,"tomato, avocado, bacon, american cheese, garlic aioli"
+Shroom Burger,17,"sautéed mushrooms, caramelized onions, swiss cheese"
+Pittsburgher,18,"corned beef, french fries, american cheese, cole slaw"
+Patty Melt,17,"caramelized onion, swiss cheese, russian dressing, griddled rye"
+Handsome Cowboy Burger,18,"bacon, cheddar cheese, bbq, onion rings"
+Make Your Own,16,
+Club Sandwich,16,"choice of ham or turkey, toasted multigrain"
+Reuben Sandwich,16,"corned beef, kraut, swiss, russian dressing, rye"
+Cheesesteak,17,"american cheese sauce, onions"
+Chicken Cheesesteak,17,"american cheese sauce, onions"
+Open Face Warm Turkey Sandwich,16,"stuffing, cranberry relish, gravy"
+Fried Chicken Sandwich,17,"pickles, slaw, brioche bun"
+BLT,15,classic BLT on white toast
+Grilled Cheese,14,melted cheddar and swiss cheese on toasted white (V)
+Tuna Melt,16,"tomato, cheddar, toasted sourdough"
+Penne Alla Vodka,17,tomato cream sauce with a touch of spice (V)
+Rigatoni Bolognese,19,classic meat sauce
+Spaghetti Pesto With Shrimp,24,sautéed jumbo shrimp tossed with basil pesto and spaghetti (nut free)
+Shrimp Scampi,25,jumbo shrimp in a garlic and lemon sauce atop spaghetti
+Fettuccini Alfredo,18,classic preparation with parmesan cheese (V)
+Pork Chops,26,apple compote
+Salmon Fillet,28,"pan roasted, pesto butter"
+Chicken Pot Pie,24,"white meat chicken and vegetables in flavorful gravy, topped with puff pastry"
+Meatloaf,22,sweet & tangy glaze
+Eggplant Parmigiana,20,"spaghetti, marinara (V)"
+Chicken Parmigiana,24,"spaghetti, marinara"
+Nyc Strip Steak,32,"grilled, béarnaise (DF)"
+Crab Cakes,30,two lump crab cakes
+Pot Roast,27,slowly braised beef served with potatoes and carrots (DF)
+Sides,6,french fries | tater tots | mashed potatoes | fried rice | sautéed vegetables | cole slaw | charred snap peas | grilled asparagus | mixed green salad | caesar salad
+1 Scoop Ice Cream,4,
+2 Scoops Ice Cream,6,"Toppings chocolate sauce, butterscotch, strawberry syrup, maple walnuts, caramelized cacao nibs, amarene cherries, rainbow sprinkles, pecan praline, graham streusel, M&Ms"
+Banana Split,12,"3 scoops of ice cream, 3 toppings, whipped cream, cherry"
+Waffle Sundae,12,"belgian waffle, 2 scoops of ice cream, 2 toppings, whipped cream, cherry"
+Milkshakes,7,choose your flavor & toppings
+Floats,7,choose your flavors
+Affogato,6,one scoop of your choice of ice cream topped with a shot of espresso Cakes & Pies Carrot Cake • Chocolate Cake • Cheesecake • Apple Pie • Lemon Meringue • Chocolate Cream $9 / Slice Butterscotch Blondie • Chocolate Chip Cookie Bar • Chocolate Chip Brownie $7 / each
+Freshly Pressed Juices,7 / 10,Green Apple • Grapefruit • Pineapple • Orange • Carrot • Beet • Tomato
+ABC,7 / 10,"green apple, beet and carrot"
+Penicillin,7 / 10,"green apple, lemon, ginger, mint"
+Fruit Loop,7 / 10,"grapefruit, orange, pineapple, green apple"
+Mr. Green Jeans,7 / 10,"spinach, green apple"
+Little Red Wagon,7 / 10,"tomato, beet, lemon"
+Root Down,7 / 10,carrot & beet
+Tropical Paradise,7 / 10,"pineapple, ginger, green apple, mint"
+V-6,7 / 10,"tomato, celery, cucumber, carrot, peppers, lemon"
+Kids Pancakes,5.5,
+Two Eggs & Toast,7,
+Kids French Toast,6,
+Kids Burger,11,choice of one side
+Grilled Chicken Breast,12,choice of one side
+Kids Chicken Fingers,13,"ranch and bbq sauces, choice of one side"
+Kids Mac & Cheese,10,
+Kids Grilled Cheese,10,"american cheese, choice of one side"
+Sautéed Fish Fillet,14,choice of one side
+Pasta with Butter or Red Sauce,10,

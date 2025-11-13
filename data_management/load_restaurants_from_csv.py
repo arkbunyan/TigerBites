@@ -1,13 +1,9 @@
+
 """
-TigerBites CSV Loader
+TigerBites CSV Loader (restaurants)
 - Reads Restaurant Data.csv and upserts into public.restaurants
-- Defaults to a CSV that lives right next to this file
-
-load the CSV in the same folder 
-python -m data_management.load_restaurants_from_csv
-
-or pass a path explicitly
-python -m data_management.load_restaurants_from_csv "data_management/Restaurant Data.csv"
+- Defaults to a CSV that lives next to this file unless a path is passed
+- UPDATED: supports 'picture' and 'yelp_rating' columns
 """
 
 import csv
@@ -20,6 +16,8 @@ from data_management.db_manager import (
     create_menu_items_table,
     create_users_table,
     ensure_restaurants_uniqueness,
+    ensure_menu_items_uniqueness,
+    migrate_restaurant_new_columns,
     bulk_insert_restaurants,
 )
 
@@ -53,13 +51,14 @@ def load_csv(csv_path: Path):
                 "avg_price": to_float(raw.get("avg_price")),
                 "latitude": to_float(raw.get("latitude")),
                 "longitude": to_float(raw.get("longitude")),
+                "picture": (raw.get("picture") or "").strip(),
+                "yelp_rating": to_float(raw.get("yelp_rating")),
             }
             rows.append(row)
     return rows
 
 
 def main():
-    # If no arg, default to sibling CSV named "Restaurant Data.csv"
     if len(sys.argv) >= 2:
         csv_path = Path(sys.argv[1])
     else:
@@ -69,11 +68,12 @@ def main():
         print(f"CSV not found: {csv_path}")
         sys.exit(2)
 
-    # Ensure schema and uniqueness
     create_restaurants_table()
+    migrate_restaurant_new_columns()
     create_menu_items_table()
     create_users_table()
     ensure_restaurants_uniqueness()
+    ensure_menu_items_uniqueness()
 
     rows = load_csv(csv_path)
     n = bulk_insert_restaurants(rows)

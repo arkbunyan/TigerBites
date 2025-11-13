@@ -1,10 +1,11 @@
+
 """
 TigerBites DB Manager
 - Handles DB connection
-- Ensures schema exists 
-- Provides insert helpers
-
-python -m data_management.db_manager
+- Ensures schema exists (restaurants/menu_items/users)
+- Provides insert helpers (single and bulk) with safe upserts
+- Adds helpers for menu item bulk upsert and restaurant lookup by name
+- UPDATED: restaurants now have 'picture' (TEXT) and 'yelp_rating' (DOUBLE PRECISION)
 """
 
 import os
@@ -14,7 +15,6 @@ import psycopg2
 from psycopg2.extras import execute_values
 from dotenv import load_dotenv
 
-# Load .env from repo root if possible, else fall back to CWD
 ROOT_ENV = Path(__file__).resolve().parents[1] / ".env"
 if ROOT_ENV.exists():
     load_dotenv(ROOT_ENV)
@@ -26,9 +26,7 @@ DATABASE_URL = os.getenv("TB_DATABASE_URL")
 
 def get_conn():
     if not DATABASE_URL:
-        raise RuntimeError(
-            "TB_DATABASE_URL not set. Add it to your .env or environment."
-        )
+        raise RuntimeError("TB_DATABASE_URL not set. Add it to your .env or environment.")
     return psycopg2.connect(DATABASE_URL)
 
 
@@ -52,6 +50,15 @@ def create_restaurants_table():
     """
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(ddl)
+        conn.commit()
+
+
+def migrate_restaurant_new_columns():
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("""ALTER TABLE public.restaurants
+                         ADD COLUMN IF NOT EXISTS picture TEXT;""")
+        cur.execute("""ALTER TABLE public.restaurants
+                         ADD COLUMN IF NOT EXISTS yelp_rating DOUBLE PRECISION;""")
         conn.commit()
 
 
@@ -79,27 +86,8 @@ def create_users_table():
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at timestamptz NOT NULL DEFAULT now(),
         netid TEXT,
-        fullname  TEXT,
-        email TEXT,
-        firstname TEXT,
-        favorite_cuisine TEXT,
+        name  TEXT,
         fav_restaurant uuid REFERENCES public.restaurants(id)
-    );
-    """
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(ddl)
-        conn.commit()
-
-def create_reviews_table():
-    ddl = """
-    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-    CREATE TABLE IF NOT EXISTS public.reviews (
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
-        created_at timestamptz NOT NULL DEFAULT now(),
-        restaurant_id uuid REFERENCES public.restaurants(id),
-        user_id uuid REFERENCES public.users(id),
-        rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-        comment TEXT
     );
     """
     with get_conn() as conn, conn.cursor() as cur:
@@ -108,7 +96,6 @@ def create_reviews_table():
 
 
 def ensure_restaurants_uniqueness():
-    # Avoid duplicates on repeated imports
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(
             """
@@ -128,12 +115,40 @@ def ensure_restaurants_uniqueness():
         conn.commit()
 
 
+def ensure_menu_items_uniqueness():
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1
+                      FROM pg_indexes
+                     WHERE indexname = 'menu_items_restaurant_name_unique_ci'
+                ) THEN
+                    CREATE UNIQUE INDEX menu_items_restaurant_name_unique_ci
+                      ON public.menu_items (restaurant_id, lower(name));
+                END IF;
+            END$$;
+            """
+        )
+        conn.commit()
+
+
+def find_restaurant_id_by_name(restaurant_name: str):
+    sql = """
+        SELECT id FROM public.restaurants
+        WHERE lower(name) = lower(%s)
+        ORDER BY created_at DESC
+        LIMIT 1;
+    """
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute(sql, (restaurant_name,))
+        row = cur.fetchone()
+        return row[0] if row else None
+
+
 def insert_restaurant(restaurant_data, menu_data=None):
-    """
-    restaurant_data: dict with keys
-      name, description, location, hours, category, avg_price, latitude, longitude, picture (optional), yelp_rating (optional)
-    menu_data: list of dicts with keys name, description, avg_price (optional)
-    """
     if menu_data is None:
         menu_data = []
 
@@ -150,8 +165,8 @@ def insert_restaurant(restaurant_data, menu_data=None):
             avg_price   = EXCLUDED.avg_price,
             latitude    = EXCLUDED.latitude,
             longitude   = EXCLUDED.longitude,
-            picture     = COALESCE(EXCLUDED.picture, public.restaurants.picture),
-            yelp_rating = COALESCE(EXCLUDED.yelp_rating, public.restaurants.yelp_rating)
+            picture     = EXCLUDED.picture,
+            yelp_rating = EXCLUDED.yelp_rating
         RETURNING id;
     """
     with get_conn() as conn, conn.cursor() as cur:
@@ -164,6 +179,10 @@ def insert_restaurant(restaurant_data, menu_data=None):
                 INSERT INTO public.menu_items
                     (restaurant_id, name, description, avg_price)
                 VALUES (%s, %s, %s, %s)
+                ON CONFLICT (restaurant_id, lower(name))
+                DO UPDATE SET
+                    description = EXCLUDED.description,
+                    avg_price   = EXCLUDED.avg_price;
                 """,
                 (
                     rest_id,
@@ -178,11 +197,6 @@ def insert_restaurant(restaurant_data, menu_data=None):
 
 
 def bulk_insert_restaurants(rows):
-    """
-    rows: list[dict] with keys
-      name, description, location, hours, category, avg_price, latitude, longitude, picture (optional), yelp_rating (optional)
-    Returns count of processed rows.
-    """
     if not rows:
         return 0
 
@@ -208,8 +222,8 @@ def bulk_insert_restaurants(rows):
             avg_price   = EXCLUDED.avg_price,
             latitude    = EXCLUDED.latitude,
             longitude   = EXCLUDED.longitude,
-            picture     = COALESCE(EXCLUDED.picture, public.restaurants.picture),
-            yelp_rating = COALESCE(EXCLUDED.yelp_rating, public.restaurants.yelp_rating);
+            picture     = EXCLUDED.picture,
+            yelp_rating = EXCLUDED.yelp_rating;
     """
     values = [tuple(r.get(c) for c in cols) for r in rows]
 
@@ -219,10 +233,33 @@ def bulk_insert_restaurants(rows):
         return len(rows)
 
 
+def bulk_upsert_menu_items(restaurant_id, items):
+    if not items:
+        return 0
+
+    sql = """
+        INSERT INTO public.menu_items (restaurant_id, name, description, avg_price)
+        VALUES %s
+        ON CONFLICT (restaurant_id, lower(name)) DO UPDATE SET
+            description = EXCLUDED.description,
+            avg_price   = EXCLUDED.avg_price;
+    """
+    values = [(restaurant_id,
+               i.get("name"),
+               i.get("description"),
+               i.get("avg_price")) for i in items]
+
+    with get_conn() as conn, conn.cursor() as cur:
+        execute_values(cur, sql, values)
+        conn.commit()
+        return len(items)
+
+
 if __name__ == "__main__":
     create_restaurants_table()
+    migrate_restaurant_new_columns()
     create_menu_items_table()
     create_users_table()
-    create_reviews_table()
     ensure_restaurants_uniqueness()
-    print("Tables ensured.")
+    ensure_menu_items_uniqueness()
+    print("Tables and indexes ensured.")
