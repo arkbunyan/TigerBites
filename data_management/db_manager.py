@@ -2,10 +2,9 @@
 """
 TigerBites DB Manager
 - Handles DB connection
-- Ensures schema exists (restaurants/menu_items/users)
-- Provides insert helpers (single and bulk) with safe upserts
+- Ensures schema exists
+- Provides insert helpers (single and bulk)
 - Adds helpers for menu item bulk upsert and restaurant lookup by name
-- UPDATED: restaurants now have 'picture' (TEXT) and 'yelp_rating' (DOUBLE PRECISION)
 """
 
 import os

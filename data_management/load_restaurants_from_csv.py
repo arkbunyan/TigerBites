@@ -3,7 +3,6 @@
 TigerBites CSV Loader (restaurants)
 - Reads Restaurant Data.csv and upserts into public.restaurants
 - Defaults to a CSV that lives next to this file unless a path is passed
-- UPDATED: supports 'picture' and 'yelp_rating' columns
 """
 
 import csv
