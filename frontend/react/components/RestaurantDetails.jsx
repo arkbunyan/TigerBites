@@ -8,20 +8,18 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
     <div className="container my-5">
       <div className="card shadow-sm border-0 mb-4">
         {restaurant.picture && (
-        <img
-          src={restaurant.picture}
-          className="card-img-top"
-          style={{ 
-            height: "350px",
-            width: "100%",
-            borderTopLeftRadius: "12px", 
-            borderTopRightRadius: "12px",
-            objectFit: "cover",
- 
-          }}
-          
-        />
-      )}
+          <img
+            src={restaurant.picture}
+            className="card-img-top"
+            style={{
+              height: "350px",
+              width: "100%",
+              borderTopLeftRadius: "12px",
+              borderTopRightRadius: "12px",
+              objectFit: "cover",
+            }}
+          />
+        )}
         <div className="card-body">
           <h2
             className="card-title fw-bold"
@@ -41,8 +39,13 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             <p className="text-secondary mb-0">📍 {restaurant.location}</p>
           )}
           {restaurant.avg_price && (
-            <p className="text-secondary">
+            <p className="text-secondary mb-0">
               💰 Average price: ${restaurant.avg_price}
+            </p>
+          )}
+          {restaurant.avg_price && (
+            <p className="text-secondary">
+              ❗Yelp rating: {restaurant.yelp_rating} / 5
             </p>
           )}
         </div>

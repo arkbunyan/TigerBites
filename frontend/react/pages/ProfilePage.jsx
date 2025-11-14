@@ -23,7 +23,7 @@ export default function ProfilePage() {
         // Map backend response to the simple shape expected by UserProfile
         const simpleUser = {
           name: data.fullname || data.firstname || data.username || "",
-          email: data.email || ""
+          email: data.email || "",
         };
         setUser(simpleUser);
         setCurrentUsername(data.username);
@@ -80,14 +80,14 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page container py-3">
-      <h1>Profile</h1>
+      <h1 className="mb-4 fw-bold border-bottom pb-2">Profile</h1>
       <UserProfile user={user} />
 
       <div
         className="favorite-cuisine-section mt-4 p-3 border rounded"
         style={{ backgroundColor: "#f8f9fa" }}
       >
-        <h3>Favorite Cuisine</h3>
+        <h3 className="mb-3">Favorite Cuisine</h3>
         {editingCuisine ? (
           <div className="input-group mb-2">
             <input

@@ -34,7 +34,7 @@ const Navbar = () => {
             </a>
           </li>
           <li className="nav-item mx-2">
-            <a className="nav-link text-dark fw-semibold" href="/map_page">
+            <a className="nav-link text-dark fw-semibold" href="/map">
               Map
             </a>
           </li>

@@ -19,7 +19,6 @@ flask_session.Session(app)
 
 # Test React
 @app.route('/', methods=['GET'])
-# @app.route('/<path:path>')
 def index():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
@@ -40,15 +39,27 @@ def home():
     })
 
 
-@app.route('/map_page', methods=['GET'])
+@app.route('/api/map', methods=['GET'])
 def map():
-    firstname = auth.get_firstname()
-    return flask.jsonify({"firstname": firstname})
+    auth.authenticate()
+    restaurants = database.load_all_restaurants()
+
+    if restaurants[0] is False:
+        return flask.jsonify({"error": restaurants[1]}), 400
+
+    return flask.jsonify({
+        "restaurants": restaurants[1]
+    })
 
 
 @app.route('/profile', methods=['GET'])
 def profile_page():
     # Serve React app for client-side profile routing
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
+
+@app.route('/map', methods=['GET'])
+def map_page():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 

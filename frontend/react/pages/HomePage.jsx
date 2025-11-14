@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import RestaurantList from "../components/RestaurantList.jsx";
 import SearchForm from "../components/SearchForm.jsx";
 
-export default function HomePage() {
+const HomePage = () => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -40,4 +40,6 @@ export default function HomePage() {
       <RestaurantList restaurants={data.restaurants} />
     </div>
   );
-}
+};
+
+export default HomePage;

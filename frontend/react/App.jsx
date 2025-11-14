@@ -5,6 +5,8 @@ import Navbar from "./components/Navbar.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import RestaurantPage from "./pages/RestaurantPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import MapPage from "./pages/MapPage.jsx";
+import { APIProvider } from "@vis.gl/react-google-maps";
 
 const App = () => {
   return (
@@ -17,6 +19,7 @@ const App = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/restaurants/:restId" element={<RestaurantPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/map" element={<MapPage />} />
         </Routes>
       </div>
     </Router>

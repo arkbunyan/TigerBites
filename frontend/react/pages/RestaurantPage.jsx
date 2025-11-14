@@ -3,6 +3,7 @@ import RestaurantDetails from "../components/RestaurantDetails.jsx";
 import ReviewForm from "../components/ReviewForm.jsx";
 import ReviewList from "../components/ReviewList.jsx";
 import { useParams } from "react-router-dom";
+import MapComponent from "../components/MapComponent.jsx";
 
 const RestaurantPage = () => {
   const { restId } = useParams();
@@ -74,7 +75,7 @@ const RestaurantPage = () => {
   return (
     <div>
       <RestaurantDetails restaurant={restaurant} menuItems={menuItems} />
-      
+
       <div className="container mt-4">
         <hr />
         {currentUsername && (
@@ -88,6 +89,12 @@ const RestaurantPage = () => {
           currentUsername={currentUsername}
           onDeleteReview={handleDeleteReview}
         />
+        {restaurant && (
+          <MapComponent
+            latitude={restaurant.latitude}
+            longitude={restaurant.longitude}
+          />
+        )}
       </div>
     </div>
   );
