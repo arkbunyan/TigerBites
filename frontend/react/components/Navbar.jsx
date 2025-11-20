@@ -39,13 +39,8 @@ const Navbar = () => {
             </a>
           </li>
           <li className="nav-item mx-2">
-            <a className="nav-link text-dark fw-semibold" href="/">
+            <a className="nav-link text-dark fw-semibold" href="/group">
               Groups
-            </a>
-          </li>
-          <li className="nav-item mx-2">
-            <a className="nav-link text-dark fw-semibold" href="/profile">
-              Profile
             </a>
           </li>
           <li className="nav-item mx-2">
@@ -64,6 +59,11 @@ const Navbar = () => {
               onClick={handleLogoutCas}
             >
               Logout of CAS
+            </a>
+          </li>
+          <li className="nav-item mx-2">
+            <a className="nav-link text-light fw-semibold" href="/profile">
+              Profile
             </a>
           </li>
         </ul>

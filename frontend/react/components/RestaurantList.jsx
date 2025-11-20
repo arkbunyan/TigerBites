@@ -9,9 +9,9 @@ const RestaurantList = ({ restaurants }) => {
   return (
     <section className="container mt-4">
       <h2 className="mb-3">Restaurants</h2>
-      <div className="row">
+      <div className="row g-3">
         {restaurants.map((rest) => (
-          <div key={rest.id} className="col-md-4 col-sm-6 mb-3">
+          <div key={rest.id} className="col-md-4 col-sm-6 mb-3 d-flex">
             <RestaurantCard rest={rest} />
           </div>
         ))}

@@ -1,1 +1,0 @@
-// Example program we may use to manage frontend:

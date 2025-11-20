@@ -38,7 +38,7 @@ def home():
         "restaurants": restaurants[1]
     })
 
-
+# Load restaurant data for map
 @app.route('/api/map', methods=['GET'])
 def map():
     auth.authenticate()
@@ -51,27 +51,36 @@ def map():
         "restaurants": restaurants[1]
     })
 
-
+# Load profile data
 @app.route('/profile', methods=['GET'])
 def profile_page():
     # Serve React app for client-side profile routing
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
+# Serve map page
 @app.route('/map', methods=['GET'])
 def map_page():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
-@app.route('/logout_app', methods=['GET'])
-def logout_app():
-    html_code = flask.render_template('logout_app.html')
-    return flask.make_response(html_code)
+# Serve group page
+@app.route('/group', methods=['GET'])
+def group_page():
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
 
+# @app.route('/logout_app', methods=['GET'])
+# def logout_app():
+#     html_code = flask.render_template('logout_app.html')
+#     return flask.make_response(html_code)
+
+# Logout route that redirects to CAS logout
 @app.route('/logout_cas', methods=['GET'])
 def logout_cas():
     return flask.redirect('/logoutcas')
 
+# Endpoint to retrieve search results 
 @app.route('/api/search', methods=['GET'])
 def search_results():
     
@@ -85,6 +94,7 @@ def search_results():
 
     return flask.jsonify({"restaurants": restaurants[1]})
 
+# Retrieve restaurant details and menu
 @app.route('/api/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
     ok_r, rest = database.load_restaurant_by_id(rest_id)
@@ -105,6 +115,7 @@ def get_restaurant_reviews(rest_id):
         return flask.jsonify({"error": reviews}), 400
     return flask.jsonify({"reviews": reviews})
 
+# Create or update a review for a restaurant
 @app.route('/api/restaurants/<rest_id>/reviews', methods=['POST'])
 def create_review(rest_id):
     auth.authenticate()
@@ -126,6 +137,7 @@ def create_review(rest_id):
     
     return flask.jsonify({"review": review}), 201
 
+# Get all reviews by the authenticated user
 @app.route('/api/users/reviews', methods=['GET'])
 def get_user_reviews():
     auth.authenticate()
@@ -135,6 +147,7 @@ def get_user_reviews():
         return flask.jsonify({"error": reviews}), 400
     return flask.jsonify({"reviews": reviews})
 
+# Delete a review by review ID
 @app.route('/api/reviews/<review_id>', methods=['DELETE'])
 def delete_user_review(review_id):
     auth.authenticate()
@@ -150,12 +163,13 @@ def delete_user_review(review_id):
 #     auth.authenticate()
 #     return f"Hello {auth.get_username()}! This is protected."
 
+# Example API endpoint that requires authentication
 @app.route('/data')
 def api_data():
     if not auth.is_authenticated():
         flask.abort(403)
     return flask.jsonify({"user": auth.get_username(), "data": []})
 
-
+# Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True)
