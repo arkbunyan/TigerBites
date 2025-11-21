@@ -490,3 +490,73 @@ def delete_review(review_id, username):
                 return [False, 'Review not found or unauthorized']
     except Exception as ex:
         return _err_response(ex)
+    
+def create_groups_table():
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("""
+                    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+                    CREATE TABLE IF NOT EXISTS groups (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        group_name TEXT NOT NULL,
+                        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                    );
+                """)
+                conn.commit()
+                print("groups table created.")
+    except Exception as ex:
+        return _err_response(ex)
+
+def create_group_members_table():
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS group_members (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        group_id UUID NOT NULL REFERENCES groups(id)
+                        user_id UUID NOT NULL REFERENCES users(id)
+                        suggested_restaurant UUID REFERENCES restaurants(id) ON DELETE SET NULL
+                    );
+                """)
+                conn.commit()
+                print("group_members table created.")
+    except Exception as ex:
+        return _err_response(ex)
+    
+#TODO: FINISH THIS @ EVAN 
+# def create_group(user_id):
+#     """
+#     Create a new blank group with user with user_id as Group Leader
+#     Username is stored as 'netid'. Returns [True, user_data] or [False, error_msg].
+#     """
+#     try:
+#         with _get_conn() as conn:
+#             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+#                 sql = """
+#                 INSERT INTO public.groups (netid, email, firstname, fullname)
+#                 VALUES (%s, %s, %s, %s)
+#                 ON CONFLICT (netid) DO UPDATE
+#                 SET email = EXCLUDED.email, 
+#                     firstname = EXCLUDED.firstname, 
+#                     fullname = EXCLUDED.fullname
+#                 RETURNING id, netid, email, firstname, fullname, favorite_cuisine
+#                 """
+#                 print(f"DEBUG upsert_user: Executing SQL with values - netid: {username}, email: {email}, firstname: {firstname}, fullname: {fullname}")
+#                 cursor.execute(sql, (username, email, firstname, fullname))
+#                 row = cursor.fetchone()
+#                 print(f"DEBUG upsert_user: Query result row: {row}")
+#                 conn.commit()
+                
+#                 if row:
+#                     return [True, dict(row)]
+#                 return [False, 'Failed to insert/update user']
+#     except Exception as ex:
+#         print(f"DEBUG upsert_user: Exception occurred: {ex}")
+#         return _err_response(ex)
+
+if __name__ == "__main__":
+    create_groups_table()
+    create_group_members_table()
