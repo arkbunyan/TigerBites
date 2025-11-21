@@ -170,7 +170,7 @@ def upsert_user(username, email, firstname, fullname):
                 SET email = EXCLUDED.email, 
                     firstname = EXCLUDED.firstname, 
                     fullname = EXCLUDED.fullname
-                RETURNING id, netid, email, firstname, fullname, favorite_cuisine
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions
                 """
                 print(f"DEBUG upsert_user: Executing SQL with values - netid: {username}, email: {email}, firstname: {firstname}, fullname: {fullname}")
                 cursor.execute(sql, (username, email, firstname, fullname))
@@ -179,7 +179,21 @@ def upsert_user(username, email, firstname, fullname):
                 conn.commit()
                 
                 if row:
-                    return [True, dict(row)]
+                    user_dict = dict(row)
+                    # Convert PostgreSQL arrays to Python lists
+                    if user_dict.get('favorite_cuisine'):
+                        user_dict['favorite_cuisine'] = list(user_dict['favorite_cuisine'])
+                    else:
+                        user_dict['favorite_cuisine'] = []
+                    if user_dict.get('allergies'):
+                        user_dict['allergies'] = list(user_dict['allergies'])
+                    else:
+                        user_dict['allergies'] = []
+                    if user_dict.get('dietary_restrictions'):
+                        user_dict['dietary_restrictions'] = list(user_dict['dietary_restrictions'])
+                    else:
+                        user_dict['dietary_restrictions'] = []
+                    return [True, user_dict]
                 return [False, 'Failed to insert/update user']
     except Exception as ex:
         print(f"DEBUG upsert_user: Exception occurred: {ex}")
@@ -193,36 +207,161 @@ def get_user_by_username(username):
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine FROM public.users WHERE netid = %s"
+                sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions FROM public.users WHERE netid = %s"
                 cursor.execute(sql, (username,))
                 row = cursor.fetchone()
                 
                 if row:
-                    return [True, dict(row)]
+                    user_dict = dict(row)
+                    # Convert PostgreSQL arrays to Python lists
+                    if user_dict.get('favorite_cuisine'):
+                        user_dict['favorite_cuisine'] = list(user_dict['favorite_cuisine'])
+                    else:
+                        user_dict['favorite_cuisine'] = []
+                    if user_dict.get('allergies'):
+                        user_dict['allergies'] = list(user_dict['allergies'])
+                    else:
+                        user_dict['allergies'] = []
+                    if user_dict.get('dietary_restrictions'):
+                        user_dict['dietary_restrictions'] = list(user_dict['dietary_restrictions'])
+                    else:
+                        user_dict['dietary_restrictions'] = []
+                    return [True, user_dict]
                 return [False, 'User not found']
     except Exception as ex:
         return _err_response(ex)
 
 def update_favorite_cuisine(username, favorite_cuisine):
     """
-    Update a user's favorite cuisine by netid (username).
+    Update a user's favorite cuisines by netid (username).
+    favorite_cuisine can be a list (for arrays) or a single string.
     Returns [True, user_data] or [False, error_msg].
     """
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # If favorite_cuisine is a list, use it as-is; otherwise convert to list
+                if isinstance(favorite_cuisine, list):
+                    cuisine_array = favorite_cuisine
+                else:
+                    cuisine_array = [favorite_cuisine] if favorite_cuisine else []
+                
                 sql = """
                 UPDATE public.users 
                 SET favorite_cuisine = %s
                 WHERE netid = %s
-                RETURNING id, netid, email, firstname, fullname, favorite_cuisine
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions
                 """
-                cursor.execute(sql, (favorite_cuisine, username))
+                cursor.execute(sql, (cuisine_array, username))
                 row = cursor.fetchone()
                 conn.commit()
                 
                 if row:
-                    return [True, dict(row)]
+                    user_dict = dict(row)
+                    # Convert PostgreSQL arrays to Python lists
+                    if user_dict.get('favorite_cuisine'):
+                        user_dict['favorite_cuisine'] = list(user_dict['favorite_cuisine'])
+                    else:
+                        user_dict['favorite_cuisine'] = []
+                    if user_dict.get('allergies'):
+                        user_dict['allergies'] = list(user_dict['allergies'])
+                    else:
+                        user_dict['allergies'] = []
+                    if user_dict.get('dietary_restrictions'):
+                        user_dict['dietary_restrictions'] = list(user_dict['dietary_restrictions']) 
+                    else:
+                        user_dict['dietary_restrictions'] = []
+                    return [True, user_dict]
+                return [False, 'User not found']
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_allergies(username, allergies):
+    """
+    Update a user's allergies by netid (username).
+    allergies can be a list (for arrays) or a single string.
+    Returns [True, user_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # If allergies is a list, use it as-is; otherwise convert to list
+                if isinstance(allergies, list):
+                    allergies_array = allergies
+                else:
+                    allergies_array = [allergies] if allergies else []
+                
+                sql = """
+                UPDATE public.users 
+                SET allergies = %s
+                WHERE netid = %s
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions
+                """
+                cursor.execute(sql, (allergies_array, username))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    user_dict = dict(row)
+                    # Convert PostgreSQL arrays to Python lists
+                    if user_dict.get('favorite_cuisine'):
+                        user_dict['favorite_cuisine'] = list(user_dict['favorite_cuisine'])
+                    else:
+                        user_dict['favorite_cuisine'] = []
+                    if user_dict.get('allergies'):
+                        user_dict['allergies'] = list(user_dict['allergies'])
+                    else:
+                        user_dict['allergies'] = []
+                    if user_dict.get('dietary_restrictions'):       
+                        user_dict['dietary_restrictions'] = list(user_dict['dietary_restrictions']) 
+                    else:
+                        user_dict['dietary_restrictions'] = []
+                    return [True, user_dict]
+                return [False, 'User not found']
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_dietary_restrictions(username, dietary_restrictions):
+    """
+    Update a user's dietary restrictions by netid (username).
+    dietary_restrictions can be a list (for arrays) or a single string.
+    Returns [True, user_data] or [False, error_msg].
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # If dietary_restrictions is a list, use it as-is; otherwise convert to list
+                if isinstance(dietary_restrictions, list):
+                    dietary_restrictions_array = dietary_restrictions
+                else:
+                    dietary_restrictions_array = [dietary_restrictions] if dietary_restrictions else []
+
+                sql = """
+                UPDATE public.users 
+                SET dietary_restrictions = %s
+                WHERE netid = %s
+                RETURNING id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions
+                """
+                cursor.execute(sql, (dietary_restrictions_array, username))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    user_dict = dict(row)
+                    # Convert PostgreSQL arrays to Python lists
+                    if user_dict.get('favorite_cuisine'):
+                        user_dict['favorite_cuisine'] = list(user_dict['favorite_cuisine'])
+                    else:
+                        user_dict['favorite_cuisine'] = []
+                    if user_dict.get('allergies'):
+                        user_dict['allergies'] = list(user_dict['allergies'])
+                    else:
+                        user_dict['allergies'] = []
+                    if user_dict.get('dietary_restrictions'):       
+                        user_dict['dietary_restrictions'] = list(user_dict['dietary_restrictions']) 
+                    else:
+                        user_dict['dietary_restrictions'] = []
+                    return [True, user_dict]
                 return [False, 'User not found']
     except Exception as ex:
         return _err_response(ex)

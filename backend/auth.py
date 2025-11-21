@@ -43,16 +43,20 @@ def api_profile():
             "firstname": get_firstname(),
             "fullname": get_fullname(),
             "email": get_email(),
-            "favorite_cuisine": ""
+            "favorite_cuisine": [],
+            "allergies": [],
+            "dietary_restrictions": []
         })
-    # Return data from database (includes favorite_cuisine)
+    # Return data from database (favorite_cuisine, allergies, and dietary_restrictions are arrays)
     return flask.jsonify({
         "user": get_user_info(),
         "username": user_data.get('netid', ''),
         "firstname": user_data.get('firstname', ''),
         "fullname": user_data.get('fullname', ''),
         "email": user_data.get('email', ''),
-        "favorite_cuisine": user_data.get('favorite_cuisine', '')
+        "favorite_cuisine": user_data.get('favorite_cuisine', []),
+        "allergies": user_data.get('allergies', []),
+        "dietary_restrictions": user_data.get('dietary_restrictions', [])
     })
 
 #-----------------------------------------------------------------------
@@ -68,11 +72,24 @@ def api_profile_update():
         print("DEBUG: No JSON data provided")
         return flask.jsonify({"error": "No data provided"}), 400
     
-    favorite_cuisine = data.get('favorite_cuisine', '')
     username = get_username()
-    print(f"DEBUG: Updating {username} with cuisine: {favorite_cuisine}")
     
-    ok, user_data = database.update_favorite_cuisine(username, favorite_cuisine)
+    # Check which field to update
+    if 'favorite_cuisine' in data:
+        favorite_cuisine = data.get('favorite_cuisine', [])
+        print(f"DEBUG: Updating {username} with cuisines: {favorite_cuisine}")
+        ok, user_data = database.update_favorite_cuisine(username, favorite_cuisine)
+    elif 'allergies' in data:
+        allergies = data.get('allergies', [])
+        print(f"DEBUG: Updating {username} with allergies: {allergies}")
+        ok, user_data = database.update_allergies(username, allergies)
+    elif 'dietary_restrictions' in data:
+        dietary_restrictions = data.get('dietary_restrictions', [])
+        print(f"DEBUG: Updating {username} with dietary_restrictions: {dietary_restrictions}")
+        ok, user_data = database.update_dietary_restrictions(username, dietary_restrictions)
+    else:
+        return flask.jsonify({"error": "No valid fields to update"}), 400
+    
     print(f"DEBUG: Update result - ok: {ok}, data: {user_data}")
     if not ok:
         print(f"DEBUG: Error updating user: {user_data}")
@@ -83,7 +100,9 @@ def api_profile_update():
         "firstname": user_data.get('firstname', ''),
         "fullname": user_data.get('fullname', ''),
         "email": user_data.get('email', ''),
-        "favorite_cuisine": user_data.get('favorite_cuisine', '')
+        "favorite_cuisine": user_data.get('favorite_cuisine', []),
+        "allergies": user_data.get('allergies', []),
+        "dietary_restrictions": user_data.get('dietary_restrictions', [])
     })
 
 #-----------------------------------------------------------------------

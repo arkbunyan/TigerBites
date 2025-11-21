@@ -51,16 +51,6 @@ def create_restaurants_table():
         cur.execute(ddl)
         conn.commit()
 
-
-def migrate_restaurant_new_columns():
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("""ALTER TABLE public.restaurants
-                         ADD COLUMN IF NOT EXISTS picture TEXT;""")
-        cur.execute("""ALTER TABLE public.restaurants
-                         ADD COLUMN IF NOT EXISTS yelp_rating DOUBLE PRECISION;""")
-        conn.commit()
-
-
 def create_menu_items_table():
     ddl = """
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -92,7 +82,6 @@ def create_users_table():
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(ddl)
         conn.commit()
-
 
 def ensure_restaurants_uniqueness():
     with get_conn() as conn, conn.cursor() as cur:
@@ -256,7 +245,6 @@ def bulk_upsert_menu_items(restaurant_id, items):
 
 if __name__ == "__main__":
     create_restaurants_table()
-    migrate_restaurant_new_columns()
     create_menu_items_table()
     create_users_table()
     ensure_restaurants_uniqueness()
