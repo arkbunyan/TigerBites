@@ -233,8 +233,9 @@ def add_group_member(group_id):
     ok, group = database.get_group_with_members(group_id)
     if not ok:
         return flask.jsonify({"error": group}), 404
-    if not _is_leader(username, group):
-        return flask.jsonify({"error": "Only leaders can add members"}), 403
+    # Any member can add other members; ensure the requester is in the group
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Only group members can add"}), 403
     ok, err = database.add_member_to_group(group_id, member_netid)
     if not ok:
         return flask.jsonify({"error": err}), 400
@@ -272,8 +273,9 @@ def set_group_restaurant(group_id):
     ok, group = database.get_group_with_members(group_id)
     if not ok:
         return flask.jsonify({"error": group}), 404
-    if not _is_leader(username, group):
-        return flask.jsonify({"error": "Only leaders can set restaurant"}), 403
+    # Any member can set restaurant; ensure requester is in the group
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Only group members can set restaurant"}), 403
     ok, updated = database.update_group_selected_restaurant(group_id, restaurant_id)
     if not ok:
         return flask.jsonify({"error": updated}), 400
