@@ -70,15 +70,21 @@ def group_page():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
-# @app.route('/logout_app', methods=['GET'])
-# def logout_app():
-#     html_code = flask.render_template('logout_app.html')
-#     return flask.make_response(html_code)
-
 # Logout route that redirects to CAS logout
 @app.route('/logout_cas', methods=['GET'])
 def logout_cas():
-    return flask.redirect('/logoutcas')
+    # This route serves the React app to show the LogoutCasPage after CAS redirects back
+    return flask.send_file('../frontend/react/index.html')
+
+# Logout app page (no authentication required)
+@app.route('/logout_app', methods=['GET'])
+def logout_app_page():
+    return flask.send_file('../frontend/react/index.html')
+
+# Logout CAS landing page (no authentication required)
+@app.route('/logout_cas_landing', methods=['GET'])
+def logout_cas_landing_page():
+    return flask.send_file('../frontend/react/index.html')
 
 # Endpoint to retrieve search results 
 @app.route('/api/search', methods=['GET'])

@@ -1,7 +1,7 @@
 import React from "react";
 
 const Navbar = () => {
-  const handleLogoutApp = async (e) => {
+  const handleLogout = async (e) => {
     e?.preventDefault();
     try {
       await fetch("/api/logout-app", { method: "POST" });
@@ -9,11 +9,6 @@ const Navbar = () => {
       console.error("logout-app failed:", err);
     }
     window.location.href = "/logout_app";
-  };
-
-  const handleLogoutCas = (e) => {
-    e?.preventDefault();
-    window.location.href = "/logoutcas";
   };
 
   return (
@@ -44,26 +39,17 @@ const Navbar = () => {
             </a>
           </li>
           <li className="nav-item mx-2">
-            <a
-              className="nav-link text-light fw-semibold"
-              href="#"
-              onClick={handleLogoutApp}
-            >
-              Logout of TigerBites
-            </a>
-          </li>
-          <li className="nav-item mx-2">
-            <a
-              className="nav-link text-light fw-semibold"
-              href="#"
-              onClick={handleLogoutCas}
-            >
-              Logout of CAS
-            </a>
-          </li>
-          <li className="nav-item mx-2">
             <a className="nav-link text-light fw-semibold" href="/profile">
               Profile
+            </a>
+          </li>
+          <li className="nav-item mx-2">
+            <a
+              className="nav-link text-light fw-semibold"
+              href="#"
+              onClick={handleLogout}
+            >
+              Logout
             </a>
           </li>
         </ul>

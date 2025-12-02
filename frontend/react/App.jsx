@@ -6,6 +6,9 @@ import HomePage from "./pages/HomePage.jsx";
 import RestaurantPage from "./pages/RestaurantPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import MapPage from "./pages/MapPage.jsx";
+import LogoutPage from "./pages/LogoutPage.jsx";
+import LogoutCasPage from "./pages/LogoutCasPage.jsx";
+import LogoutCasLandingPage from "./pages/LogoutCasLandingPage.jsx";
 import { APIProvider } from "@vis.gl/react-google-maps";
 import GroupsPage from "./pages/GroupPage.jsx";
 
@@ -22,6 +25,9 @@ const App = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/group" element={<GroupsPage />} />
+          <Route path="/logout_app" element={<LogoutPage />} />
+          <Route path="/logout_cas" element={<LogoutCasPage />} />
+          <Route path="/logout_cas_landing" element={<LogoutCasLandingPage />} />
         </Routes>
       </div>
     </Router>
