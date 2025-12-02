@@ -5,6 +5,7 @@ import os
 from backend import auth
 from backend import database
 from backend.top import app
+from data_management import db_manager
 
 
 session_database_url = os.getenv('TB_DATABASE_URL') 
@@ -175,6 +176,119 @@ def api_data():
     if not auth.is_authenticated():
         flask.abort(403)
     return flask.jsonify({"user": auth.get_username(), "data": []})
+
+# -------------------- Group Feature API Endpoints --------------------
+
+def _require_auth():
+    auth.authenticate()
+    return auth.get_username()
+
+@app.route('/api/groups', methods=['GET'])
+def list_groups():
+    """List groups current user belongs to."""
+    username = _require_auth()
+    ok, groups = database.list_groups_for_user(username)
+    if not ok:
+        return flask.jsonify({"error": groups}), 400
+    return flask.jsonify({"groups": groups})
+
+@app.route('/api/groups', methods=['POST'])
+def create_group():
+    """Create a new group; creator becomes leader."""
+    username = _require_auth()
+    data = flask.request.get_json() or {}
+    group_name = data.get('group_name', '').strip()
+    selected_restaurant_id = data.get('selected_restaurant_id')
+    if not group_name:
+        return flask.jsonify({"error": "group_name required"}), 400
+    ok, result = database.create_group(group_name, username, selected_restaurant_id)
+    if not ok:
+        return flask.jsonify({"error": result}), 400
+    return flask.jsonify({"group": result}), 201
+
+@app.route('/api/groups/<group_id>', methods=['GET'])
+def get_group(group_id):
+    username = _require_auth()
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    # Basic authorization: only members can view
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Forbidden"}), 403
+    return flask.jsonify({"group": group})
+
+def _is_leader(username, group):
+    for m in group['members']:
+        if m['netid'] == username and m['role'] == 'leader':
+            return True
+    return False
+
+@app.route('/api/groups/<group_id>/members', methods=['POST'])
+def add_group_member(group_id):
+    username = _require_auth()
+    data = flask.request.get_json() or {}
+    member_netid = data.get('netid', '').strip()
+    if not member_netid:
+        return flask.jsonify({"error": "netid required"}), 400
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    if not _is_leader(username, group):
+        return flask.jsonify({"error": "Only leaders can add members"}), 403
+    ok, err = database.add_member_to_group(group_id, member_netid)
+    if not ok:
+        return flask.jsonify({"error": err}), 400
+    # Return updated group
+    ok, updated = database.get_group_with_members(group_id)
+    return flask.jsonify({"group": updated}), 200
+
+@app.route('/api/groups/<group_id>/members/<member_netid>', methods=['DELETE'])
+def remove_group_member(group_id, member_netid):
+    username = _require_auth()
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    # Prevent removal of leader entirely
+    if any(m['netid'] == member_netid and m['role'] == 'leader' for m in group['members']):
+        return flask.jsonify({"error": "Cannot remove group leader"}), 400
+    # Allow self removal or leader removing others
+    if username != member_netid and not _is_leader(username, group):
+        return flask.jsonify({"error": "Forbidden"}), 403
+    ok, err = database.remove_member_from_group(group_id, member_netid)
+    if not ok:
+        return flask.jsonify({"error": err}), 400
+    ok, updated = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": updated}), 400
+    return flask.jsonify({"group": updated}), 200
+
+@app.route('/api/groups/<group_id>/restaurant', methods=['PUT'])
+def set_group_restaurant(group_id):
+    username = _require_auth()
+    data = flask.request.get_json() or {}
+    restaurant_id = data.get('restaurant_id')
+    if not restaurant_id:
+        return flask.jsonify({"error": "restaurant_id required"}), 400
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    if not _is_leader(username, group):
+        return flask.jsonify({"error": "Only leaders can set restaurant"}), 403
+    ok, updated = database.update_group_selected_restaurant(group_id, restaurant_id)
+    if not ok:
+        return flask.jsonify({"error": updated}), 400
+    ok, full = database.get_group_with_members(group_id)
+    return flask.jsonify({"group": full}), 200
+
+@app.route('/api/users/search', methods=['GET'])
+def user_search():
+    """Search users by name or NetID (partial match). Requires authentication."""
+    _require_auth()
+    q = flask.request.args.get('q', '')
+    ok, results = database.search_users(q)
+    if not ok:
+        return flask.jsonify({"error": results}), 400
+    return flask.jsonify({"users": results})
 
 # Run the Flask app
 if __name__ == "__main__":

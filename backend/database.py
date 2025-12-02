@@ -491,40 +491,8 @@ def delete_review(review_id, username):
     except Exception as ex:
         return _err_response(ex)
     
-def create_groups_table():
-    try:
-        with _get_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                cursor.execute("""
-                    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-                    CREATE TABLE IF NOT EXISTS groups (
-                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                        group_name TEXT NOT NULL,
-                        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-                    );
-                """)
-                conn.commit()
-                print("groups table created.")
-    except Exception as ex:
-        return _err_response(ex)
-
-def create_group_members_table():
-    try:
-        with _get_conn() as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                cursor.execute("""
-                    CREATE TABLE IF NOT EXISTS group_members (
-                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                        group_id UUID NOT NULL REFERENCES groups(id)
-                        user_id UUID NOT NULL REFERENCES users(id)
-                        suggested_restaurant UUID REFERENCES restaurants(id) ON DELETE SET NULL
-                    );
-                """)
-                conn.commit()
-                print("group_members table created.")
-    except Exception as ex:
-        return _err_response(ex)
+# ensure_group_columns removed; schema management lives in data_management/db_manager.py
     
 #TODO: FINISH THIS @ EVAN 
 # def create_group(user_id):
@@ -557,6 +525,200 @@ def create_group_members_table():
 #         print(f"DEBUG upsert_user: Exception occurred: {ex}")
 #         return _err_response(ex)
 
+def create_group(group_name, creator_netid, selected_restaurant_id=None):
+    """Create a new group and add creator (netid) as leader."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # Validate creator exists
+                cursor.execute("SELECT netid FROM users WHERE netid = %s", (creator_netid,))
+                if cursor.fetchone() is None:
+                    return [False, 'Creator user not found']
+                # Restaurant validation
+                if selected_restaurant_id is not None:
+                    cursor.execute("SELECT id FROM restaurants WHERE id = %s", (selected_restaurant_id,))
+                    if cursor.fetchone() is None:
+                        return [False, 'Selected restaurant not found']
+                cursor.execute(
+                    """
+                    INSERT INTO groups (group_name, creator_netid, selected_restaurant_id)
+                    VALUES (%s, %s, %s)
+                    RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at
+                    """,
+                    (group_name, creator_netid, selected_restaurant_id)
+                )
+                g_row = cursor.fetchone()
+                # Add creator as leader member
+                cursor.execute(
+                    """
+                    INSERT INTO group_members (group_id, user_netid, role)
+                    VALUES (%s, %s, 'leader')
+                    ON CONFLICT (group_id, user_netid) DO NOTHING
+                    """,
+                    (g_row['id'], creator_netid)
+                )
+                conn.commit()
+                data = dict(g_row)
+                data['id'] = str(data['id'])
+                data['created_at'] = data['created_at'].isoformat()
+                return [True, data]
+    except Exception as ex:
+        return _err_response(ex)
+
+def add_member_to_group(group_id, member_netid):
+    """Add user by netid to group."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("SELECT netid FROM users WHERE netid = %s", (member_netid,))
+                if cursor.fetchone() is None:
+                    return [False, 'User not found']
+                cursor.execute("SELECT id FROM groups WHERE id = %s", (group_id,))
+                if cursor.fetchone() is None:
+                    return [False, 'Group not found']
+                cursor.execute(
+                    """
+                    INSERT INTO group_members (group_id, user_netid, role)
+                    VALUES (%s, %s, 'member')
+                    ON CONFLICT (group_id, user_netid) DO NOTHING
+                    """,
+                    (group_id, member_netid)
+                )
+                conn.commit()
+                return [True, None]
+    except Exception as ex:
+        return _err_response(ex)
+
+def remove_member_from_group(group_id, member_netid):
+    """Remove member by netid."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute(
+                    "DELETE FROM group_members WHERE group_id = %s AND user_netid = %s RETURNING group_id",
+                    (group_id, member_netid)
+                )
+                del_row = cursor.fetchone()
+                conn.commit()
+                if del_row:
+                    return [True, None]
+                return [False, 'Membership not found']
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_group_selected_restaurant(group_id, restaurant_id):
+    """Update the selected restaurant for a group."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # Validate restaurant
+                cursor.execute("SELECT id FROM restaurants WHERE id = %s", (restaurant_id,))
+                if cursor.fetchone() is None:
+                    return [False, 'Restaurant not found']
+                cursor.execute(
+                    "UPDATE groups SET selected_restaurant_id = %s WHERE id = %s RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at",
+                    (restaurant_id, group_id)
+                )
+                row = cursor.fetchone()
+                conn.commit()
+                if not row:
+                    return [False, 'Group not found']
+                data = dict(row)
+                data['id'] = str(data['id'])
+                data['created_at'] = data['created_at'].isoformat()
+                return [True, data]
+    except Exception as ex:
+        return _err_response(ex)
+
+def get_group_with_members(group_id):
+    """Return group details plus member list."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("""
+                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at,
+                           r.name AS restaurant_name
+                    FROM groups g
+                    LEFT JOIN restaurants r ON g.selected_restaurant_id = r.id
+                    WHERE g.id = %s
+                """, (group_id,))
+                g_row = cursor.fetchone()
+                if not g_row:
+                    return [False, 'Group not found']
+                cursor.execute("""
+                    SELECT gm.user_netid AS netid, gm.role, gm.joined_at, u.firstname, u.fullname
+                    FROM group_members gm
+                    JOIN users u ON gm.user_netid = u.netid
+                    WHERE gm.group_id = %s
+                    ORDER BY gm.joined_at ASC
+                """, (group_id,))
+                members_rows = cursor.fetchall()
+                members = []
+                for mr in members_rows:
+                    md = dict(mr)
+                    md['joined_at'] = md['joined_at'].isoformat()
+                    members.append(md)
+                data = dict(g_row)
+                data['id'] = str(data['id'])
+                data['created_at'] = data['created_at'].isoformat()
+                data['members'] = members
+                return [True, data]
+    except Exception as ex:
+        return _err_response(ex)
+
+def list_groups_for_user(netid):
+    """List groups for which netid is a member."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("""
+                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at
+                    FROM group_members gm
+                    JOIN groups g ON gm.group_id = g.id
+                    WHERE gm.user_netid = %s
+                    ORDER BY g.created_at DESC
+                """, (netid,))
+                rows = cursor.fetchall()
+                groups = []
+                for r in rows:
+                    d = dict(r)
+                    d['id'] = str(d['id'])
+                    d['created_at'] = d['created_at'].isoformat()
+                    groups.append(d)
+                return [True, groups]
+    except Exception as ex:
+        return _err_response(ex)
+
+def search_users(query, limit=10):
+    """Search users by partial match on netid, firstname, or fullname. Returns list of {netid, firstname, fullname}."""
+    q = (query or '').strip()
+    if not q:
+        return [True, []]
+    like = f"%{q}%"
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute(
+                    """
+                    SELECT netid, firstname, fullname
+                    FROM users
+                    WHERE netid ILIKE %s OR firstname ILIKE %s OR fullname ILIKE %s
+                    ORDER BY firstname ASC
+                    LIMIT %s
+                    """,
+                    (like, like, like, limit)
+                )
+                rows = cursor.fetchall()
+                results = []
+                for row in rows:
+                    results.append({
+                        'netid': row['netid'],
+                        'firstname': row.get('firstname'),
+                        'fullname': row.get('fullname')
+                    })
+                return [True, results]
+    except Exception as ex:
+        return _err_response(ex)
+
 if __name__ == "__main__":
-    create_groups_table()
-    create_group_members_table()
+    pass

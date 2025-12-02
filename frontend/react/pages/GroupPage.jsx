@@ -1,17 +1,329 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const GroupsPage = () => {
+  const [groups, setGroups] = useState([]);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+  const [error, setError] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupRestaurant, setNewGroupRestaurant] = useState("");
+  const [restaurants, setRestaurants] = useState([]);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [groupDetails, setGroupDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [memberNetid, setMemberNetid] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [debounceId, setDebounceId] = useState(null);
+
+  // Fetch user groups
+  const loadGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const res = await fetch('/api/groups');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setGroups(data.groups || []);
+    } catch (e) {
+      setError('Failed to load groups');
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
+  // Fetch restaurants for selection
+  const loadRestaurants = async () => {
+    try {
+      const res = await fetch('/api/home');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setRestaurants(data.restaurants || []);
+    } catch (e) {
+      console.error('Failed to load restaurants', e);
+    }
+  };
+
+  useEffect(() => {
+    loadGroups();
+    loadRestaurants();
+  }, []);
+
+  // Load group details
+  const loadGroupDetails = async (groupId) => {
+    setSelectedGroupId(groupId);
+    setLoadingDetails(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setGroupDetails(data.group);
+    } catch (e) {
+      setActionMessage('Failed to load group');
+      setGroupDetails(null);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const isLeader = () => {
+    if (!groupDetails) return false;
+    const username = groupDetails.members.find(m => m.role === 'leader');
+    return true;
+  };
+
+  const handleCreateGroup = async (e) => {
+    e.preventDefault();
+    setActionMessage("");
+    if (!newGroupName.trim()) {
+      setActionMessage('Group name required');
+      return;
+    }
+    try {
+      const res = await fetch('/api/groups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group_name: newGroupName.trim(), selected_restaurant_id: newGroupRestaurant || null })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create group');
+      setActionMessage('Group created');
+      setShowCreate(false);
+      setNewGroupName('');
+      setNewGroupRestaurant('');
+      loadGroups();
+      loadGroupDetails(data.group.id);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    if (!memberNetid.trim()) {
+      setActionMessage('NetID required');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ netid: memberNetid.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add member');
+      setActionMessage('Member added');
+      setMemberNetid('');
+      setGroupDetails(data.group);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
+  // Debounced search for users by name/netid
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setSearchResults([]);
+      setSearchError("");
+      return;
+    }
+    if (debounceId) {
+      clearTimeout(debounceId);
+    }
+    const id = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await fetch(`/api/users/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setSearchResults(data.users || []);
+        setSearchError("");
+      } catch (e) {
+        setSearchError('Search failed');
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+    setDebounceId(id);
+    return () => clearTimeout(id);
+  }, [searchQuery]);
+
+  const handleSelectSearchUser = async (user) => {
+    if (!selectedGroupId) return;
+    if (groupDetails && groupDetails.members.some(m => m.netid === user.netid)) {
+      setActionMessage('User already in group');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ netid: user.netid })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add');
+      setGroupDetails(data.group);
+      setActionMessage(`Added ${user.netid}`);
+      setSearchQuery("");
+      setSearchResults([]);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
+  const handleRemoveMember = async (netid) => {
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/members/${netid}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to remove member');
+      setActionMessage('Member removed');
+      setGroupDetails(data.group);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
+  const handleSetRestaurant = async (e) => {
+    const restId = e.target.value;
+    if (!restId) return;
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/restaurant`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant_id: restId })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to set restaurant');
+      setActionMessage('Restaurant selected');
+      setGroupDetails(data.group);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">Your Groups</h2>
+      <h2 className="mb-3">Groups</h2>
+      {error && <div className="alert alert-danger py-2 my-2">{error}</div>}
+      {actionMessage && <div className="alert alert-info py-2 my-2">{actionMessage}</div>}
 
-      <div className="mb-4">
-        <button className="btn btn-primary">+ Create New Group</button>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <button className="btn btn-primary" onClick={() => setShowCreate(s => !s)}>
+          {showCreate ? 'Cancel' : '+ Create New Group'}
+        </button>
       </div>
 
-      <p className="text-muted fst-italic">
-        You are not part of any groups yet.
-      </p>
+      {showCreate && (
+        <form className="card card-body mb-4" onSubmit={handleCreateGroup}>
+          <div className="mb-3">
+            <label className="form-label">Group Name</label>
+            <input className="form-control" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Initial Restaurant (optional)</label>
+            <select className="form-select" value={newGroupRestaurant} onChange={e => setNewGroupRestaurant(e.target.value)}>
+              <option value="">-- None --</option>
+              {restaurants.map(r => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" className="btn btn-success">Create Group</button>
+        </form>
+      )}
+
+      <div className="row">
+        <div className="col-md-5">
+          <h5>Your Groups</h5>
+          {loadingGroups && <p>Loading groups...</p>}
+          {!loadingGroups && groups.length === 0 && (
+            <p className="text-muted fst-italic">You are not part of any groups yet.</p>
+          )}
+          <ul className="list-group">
+            {groups.map(g => (
+              <li key={g.id} className={`list-group-item d-flex justify-content-between align-items-center ${selectedGroupId === g.id ? 'active' : ''}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => loadGroupDetails(g.id)}>
+                <span>{g.group_name}</span>
+                {g.selected_restaurant_id && (
+                  <small className="badge bg-light text-dark">
+                    {(() => {
+                      const r = restaurants.find(r => String(r.id) === String(g.selected_restaurant_id));
+                      return r ? r.name : 'Restaurant';
+                    })()}
+                  </small>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="col-md-7 mt-4 mt-md-0">
+          {loadingDetails && <p>Loading group details...</p>}
+          {!loadingDetails && groupDetails && (
+            <div className="card">
+              <div className="card-body">
+                <h4 className="card-title">{groupDetails.group_name}</h4>
+                <div className="mb-3">
+                  <label className="form-label">Selected Restaurant</label>
+                  <select className="form-select" disabled={!isLeader()} value={groupDetails.selected_restaurant_id || ''} onChange={handleSetRestaurant}>
+                    <option value="">-- Choose Restaurant --</option>
+                    {restaurants.map(r => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <h5>Members</h5>
+                <ul className="list-group mb-3">
+                  {groupDetails.members.map(m => (
+                    <li key={m.netid} className="list-group-item d-flex justify-content-between align-items-center">
+                      <span>{m.fullname || m.firstname || m.netid} {m.role === 'leader' && <span className="badge bg-primary ms-2">Leader</span>}</span>
+                      {m.role !== 'leader' && (
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveMember(m.netid)}>Remove</button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mb-3">
+                  <label className="form-label">Add Member (search by name or NetID)</label>
+                  <input
+                    className="form-control"
+                    placeholder="Type at least 2 characters"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                  />
+                  {searchLoading && <small className="text-muted">Searching...</small>}
+                  {searchError && <div className="text-danger small">{searchError}</div>}
+                  {searchResults.length > 0 && (
+                    <ul className="list-group mt-2">
+                      {searchResults.map(u => {
+                        const inGroup = groupDetails.members.some(m => m.netid === u.netid);
+                        return (
+                          <li key={u.netid} className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                              {u.fullname || u.firstname || u.netid}
+                              <small className="text-muted ms-2">{u.netid}</small>
+                              {inGroup && <span className="badge bg-secondary ms-2">In group</span>}
+                            </span>
+                            {!inGroup && (
+                              <button className="btn btn-sm btn-outline-primary" onClick={() => handleSelectSearchUser(u)}>Add</button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {!loadingDetails && !groupDetails && selectedGroupId && (
+            <p className="text-danger">Failed to load group details.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
