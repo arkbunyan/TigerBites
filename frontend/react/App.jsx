@@ -1,7 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/Header.jsx";
-import Navbar from "./components/Navbar.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import RestaurantPage from "./pages/RestaurantPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
@@ -9,15 +7,14 @@ import MapPage from "./pages/MapPage.jsx";
 import LogoutPage from "./pages/LogoutPage.jsx";
 import LogoutCasPage from "./pages/LogoutCasPage.jsx";
 import LogoutCasLandingPage from "./pages/LogoutCasLandingPage.jsx";
-import { APIProvider } from "@vis.gl/react-google-maps";
 import GroupsPage from "./pages/GroupPage.jsx";
+import HeaderNav from "./components/HeaderNav.jsx";
 
 const App = () => {
   return (
     <Router>
-      <div className="container">
-        <Header />
-        <Navbar />
+      <div>
+        <HeaderNav />
 
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -27,7 +24,10 @@ const App = () => {
           <Route path="/group" element={<GroupsPage />} />
           <Route path="/logout_app" element={<LogoutPage />} />
           <Route path="/logout_cas" element={<LogoutCasPage />} />
-          <Route path="/logout_cas_landing" element={<LogoutCasLandingPage />} />
+          <Route
+            path="/logout_cas_landing"
+            element={<LogoutCasLandingPage />}
+          />
         </Routes>
       </div>
     </Router>
