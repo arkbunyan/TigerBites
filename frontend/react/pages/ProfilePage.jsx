@@ -6,7 +6,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [favoriteCuisine, setFavoriteCuisine] = useState([]);
   const [editingCuisine, setEditingCuisine] = useState(false);
-  const [newCuisineInput, setNewCuisineInput] = useState("");
+  const [availableCuisines, setAvailableCuisines] = useState([]);
   const [allergies, setAllergies] = useState([]);
   const [editingAllergies, setEditingAllergies] = useState(false);
   const [newAllergyInput, setNewAllergyInput] = useState("");
@@ -23,25 +23,6 @@ export default function ProfilePage() {
   const [cuisineMessage, setCuisineMessage] = useState("");
   const [allergyMessage, setAllergyMessage] = useState("");
   const [dietaryMessage, setDietaryMessage] = useState("");
-
-  const commonCuisines = [
-    "Italian",
-    "Mexican",
-    "Chinese",
-    "Japanese",
-    "Thai",
-    "Indian",
-    "American",
-    "Mediterranean",
-    "French",
-    "Korean",
-    "Vietnamese",
-    "Greek",
-    "Spanish",
-    "Middle Eastern",
-    "Soul Food",
-    "BBQ",
-  ];
 
   const commonAllergies = [
     "Peanuts",
@@ -67,6 +48,19 @@ export default function ProfilePage() {
   ];
 
   useEffect(() => {
+    // Fetch available cuisines from the API
+    fetch("/api/cuisines", { credentials: "same-origin" })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error(`Failed to load cuisines: ${res.status}`);
+      })
+      .then((data) => {
+        setAvailableCuisines(data.cuisines || []);
+      })
+      .catch((err) => {
+        console.error("Error loading cuisines:", err);
+      });
+
     // Fetch user profile data from the API
     fetch("/api/profile", { credentials: "same-origin" })
       .then((res) => {
@@ -126,21 +120,12 @@ export default function ProfilePage() {
         Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []
       );
       setEditingCuisine(false);
-      setNewCuisineInput("");
       setCuisineMessage("Favorite cuisines updated!");
       setTimeout(() => setCuisineMessage(""), 3000);
     } catch (err) {
       console.error("Failed to update cuisines:", err);
       setCuisineMessage("Failed to update favorite cuisines");
       setTimeout(() => setCuisineMessage(""), 3000);
-    }
-  };
-
-  const handleAddCuisine = () => {
-    const trimmed = newCuisineInput.trim();
-    if (trimmed && !favoriteCuisine.includes(trimmed)) {
-      setFavoriteCuisine([...favoriteCuisine, trimmed]);
-      setNewCuisineInput("");
     }
   };
 
@@ -313,7 +298,7 @@ export default function ProfilePage() {
                 Quick select:
               </label>
               <div className="d-flex flex-wrap gap-2">
-                {commonCuisines
+                {availableCuisines
                   .filter((c) => !favoriteCuisine.includes(c))
                   .map((cuisine) => (
                     <button
@@ -328,23 +313,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Custom input */}
-            <div className="input-group mb-2">
-              <input
-                type="text"
-                className="form-control"
-                value={newCuisineInput}
-                onChange={(e) => setNewCuisineInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Or type your own..."
-              />
-              <button
-                className="btn btn-outline-secondary"
-                onClick={handleAddCuisine}
-              >
-                Add
-              </button>
-            </div>
             <div className="d-flex gap-2">
               <button
                 className="btn"

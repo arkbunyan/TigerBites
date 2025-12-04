@@ -258,9 +258,9 @@ def remove_group_member(group_id, member_netid):
     # Prevent removal of leader entirely
     if any(m['netid'] == member_netid and m['role'] == 'leader' for m in group['members']):
         return flask.jsonify({"error": "Cannot remove group leader"}), 400
-    # Allow self removal or leader removing others
-    if username != member_netid and not _is_leader(username, group):
-        return flask.jsonify({"error": "Forbidden"}), 403
+    # Allow any member to remove others (including self), but block non-members
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Only group members can remove"}), 403
     ok, err = database.remove_member_from_group(group_id, member_netid)
     if not ok:
         return flask.jsonify({"error": err}), 400
@@ -297,6 +297,31 @@ def user_search():
     if not ok:
         return flask.jsonify({"error": results}), 400
     return flask.jsonify({"users": results})
+
+@app.route('/api/cuisines', methods=['GET'])
+def get_cuisines():
+    """Get list of available cuisine types from restaurants database."""
+    auth.authenticate()
+    worked, cuisines = database.get_available_cuisines()
+    if not worked:
+        return flask.jsonify({"error": cuisines}), 400
+    return flask.jsonify({"cuisines": cuisines})
+
+@app.route('/api/groups/<group_id>/preferences', methods=['GET'])
+def get_group_preferences(group_id):
+    """Get aggregated preferences (recommended cuisines, dietary restrictions) for a group."""
+    username = _require_auth()
+    # Verify membership
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Forbidden"}), 403
+    
+    ok, prefs = database.get_group_preferences(group_id)
+    if not ok:
+        return flask.jsonify({"error": prefs}), 400
+    return flask.jsonify({"preferences": prefs})
 
 # Run the Flask app
 if __name__ == "__main__":

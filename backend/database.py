@@ -720,5 +720,85 @@ def search_users(query, limit=10):
     except Exception as ex:
         return _err_response(ex)
 
+def get_available_cuisines():
+    """Get distinct cuisine/category values from restaurants table."""
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                cursor.execute("""
+                    SELECT DISTINCT category
+                    FROM restaurants
+                    WHERE category IS NOT NULL AND category <> ''
+                    ORDER BY category ASC
+                """)
+                rows = cursor.fetchall()
+                cuisines = [row['category'] for row in rows]
+                return [True, cuisines]
+    except Exception as ex:
+        return _err_response(ex)
+
+def get_group_preferences(group_id):
+    """
+    Aggregate favorite cuisines, dietary restrictions, and allergies for all members in a group.
+    """
+    try:
+        with _get_conn() as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # Get all members' preferences
+                cursor.execute("""
+                    SELECT u.favorite_cuisine, u.dietary_restrictions, u.allergies
+                    FROM group_members gm
+                    JOIN users u ON gm.user_netid = u.netid
+                    WHERE gm.group_id = %s
+                """, (group_id,))
+                rows = cursor.fetchall()
+                
+                if not rows:
+                    return [True, {
+                        'recommended_cuisines': [],
+                        'dietary_restrictions': [],
+                        'allergies': [],
+                        'cuisine_counts': {}
+                    }]
+                
+                # Aggregate cuisines for group(count frequency)
+                cuisine_count = {}
+                dietary_set = set()
+                allergies_set = set()
+                
+                for row in rows:
+                    cuisines = row['favorite_cuisine'] or []
+                    restrictions = row['dietary_restrictions'] or []
+                    allergies = row['allergies'] or []
+                    
+                    # Count each cuisine (case-insensitive, normalize to title case)
+                    for c in cuisines:
+                        if c:
+                            normalized = c.strip().title()
+                            cuisine_count[normalized] = cuisine_count.get(normalized, 0) + 1
+                    
+                    # Union of dietary restrictions
+                    for d in restrictions:
+                        if d:
+                            dietary_set.add(d.strip().title())
+                    
+                    # Union of allergies
+                    for a in allergies:
+                        if a:
+                            allergies_set.add(a.strip().title())
+                
+                # Sort cuisines by count desc, then alphabetically
+                sorted_cuisines = sorted(cuisine_count.items(), key=lambda x: (-x[1], x[0]))
+                top_cuisines = [c[0] for c in sorted_cuisines[:3]]
+                
+                return [True, {
+                    'recommended_cuisines': top_cuisines,
+                    'dietary_restrictions': sorted(list(dietary_set)),
+                    'allergies': sorted(list(allergies_set)),
+                    'cuisine_counts': cuisine_count
+                }]
+    except Exception as ex:
+        return _err_response(ex)
+
 if __name__ == "__main__":
     pass

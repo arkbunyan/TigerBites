@@ -18,6 +18,8 @@ const GroupsPage = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [debounceId, setDebounceId] = useState(null);
+  const [groupPreferences, setGroupPreferences] = useState(null);
+  const [loadingPreferences, setLoadingPreferences] = useState(false);
 
   // Fetch user groups
   const loadGroups = async () => {
@@ -55,16 +57,35 @@ const GroupsPage = () => {
   const loadGroupDetails = async (groupId) => {
     setSelectedGroupId(groupId);
     setLoadingDetails(true);
+    setGroupPreferences(null);
     try {
       const res = await fetch(`/api/groups/${groupId}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setGroupDetails(data.group);
+      // Load preferences
+      loadGroupPreferences(groupId);
     } catch (e) {
       setActionMessage('Failed to load group');
       setGroupDetails(null);
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  // Load group preferences
+  const loadGroupPreferences = async (groupId) => {
+    setLoadingPreferences(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/preferences`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setGroupPreferences(data.preferences);
+    } catch (e) {
+      console.error('Failed to load preferences', e);
+      setGroupPreferences(null);
+    } finally {
+      setLoadingPreferences(false);
     }
   };
 
@@ -266,6 +287,45 @@ const GroupsPage = () => {
             <div className="card">
               <div className="card-body">
                 <h4 className="card-title">{groupDetails.group_name}</h4>
+                
+                {/* Group Preferences Section */}
+                {groupPreferences && (
+                  <div className="mb-4 p-3 bg-light rounded">
+                    <h6 className="mb-2">Group Preferences</h6>
+                    <div className="mb-2">
+                      <strong>Recommended Cuisines:</strong>{' '}
+                      {groupPreferences.recommended_cuisines.length > 0 ? (
+                        groupPreferences.recommended_cuisines.map((c, i) => (
+                          <span key={i} className="badge bg-success me-1">{c}</span>
+                        ))
+                      ) : (
+                        <span className="text-muted fst-italic">No preferences yet</span>
+                      )}
+                    </div>
+                    <div className="mb-2">
+                      <strong>Dietary Restrictions:</strong>{' '}
+                      {groupPreferences.dietary_restrictions.length > 0 ? (
+                        groupPreferences.dietary_restrictions.map((d, i) => (
+                          <span key={i} className="badge bg-warning text-dark me-1">{d}</span>
+                        ))
+                      ) : (
+                        <span className="text-muted fst-italic">None</span>
+                      )}
+                    </div>
+                    <div>
+                      <strong>Allergies:</strong>{' '}
+                      {groupPreferences.allergies.length > 0 ? (
+                        groupPreferences.allergies.map((a, i) => (
+                          <span key={i} className="badge bg-danger me-1">{a}</span>
+                        ))
+                      ) : (
+                        <span className="text-muted fst-italic">None</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {loadingPreferences && <p className="text-muted fst-italic">Loading preferences...</p>}
+
                 <div className="mb-3">
                   <label className="form-label">Selected Restaurant</label>
                   <select className="form-select" disabled={!isLeader()} value={groupDetails.selected_restaurant_id || ''} onChange={handleSetRestaurant}>
