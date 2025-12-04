@@ -10,9 +10,11 @@ export default function ProfilePage() {
   const [allergies, setAllergies] = useState([]);
   const [editingAllergies, setEditingAllergies] = useState(false);
   const [newAllergyInput, setNewAllergyInput] = useState("");
-  const [dietaryRestrictions,setDietaryRestrictions] = useState([]);
-  const [editingDietaryRestrictions, setEditingDietaryRestrictions] = useState(false);
-  const [newDietaryRestrictionInput, setNewDietaryRestrictionInput] = useState("");
+  const [dietaryRestrictions, setDietaryRestrictions] = useState([]);
+  const [editingDietaryRestrictions, setEditingDietaryRestrictions] =
+    useState(false);
+  const [newDietaryRestrictionInput, setNewDietaryRestrictionInput] =
+    useState("");
   const [reviews, setReviews] = useState([]);
   const [currentUsername, setCurrentUsername] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,18 +25,45 @@ export default function ProfilePage() {
   const [dietaryMessage, setDietaryMessage] = useState("");
 
   const commonCuisines = [
-    "Italian", "Mexican", "Chinese", "Japanese", "Thai", "Indian",
-    "American", "Mediterranean", "French", "Korean", "Vietnamese",
-    "Greek", "Spanish", "Middle Eastern", "Soul Food", "BBQ"
+    "Italian",
+    "Mexican",
+    "Chinese",
+    "Japanese",
+    "Thai",
+    "Indian",
+    "American",
+    "Mediterranean",
+    "French",
+    "Korean",
+    "Vietnamese",
+    "Greek",
+    "Spanish",
+    "Middle Eastern",
+    "Soul Food",
+    "BBQ",
   ];
 
   const commonAllergies = [
-    "Peanuts", "Tree Nuts", "Milk", "Eggs", "Wheat", "Soy",
-    "Fish", "Shellfish", "Sesame", "Gluten", "Lactose"
+    "Peanuts",
+    "Tree Nuts",
+    "Milk",
+    "Eggs",
+    "Wheat",
+    "Soy",
+    "Fish",
+    "Shellfish",
+    "Sesame",
+    "Gluten",
+    "Lactose",
   ];
 
   const commonDietaryRestrictions = [
-    "Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Pescatarian"
+    "Vegetarian",
+    "Vegan",
+    "Gluten-Free",
+    "Dairy-Free",
+    "Nut-Free",
+    "Pescatarian",
   ];
 
   useEffect(() => {
@@ -52,9 +81,15 @@ export default function ProfilePage() {
         };
         setUser(simpleUser);
         setCurrentUsername(data.username);
-        setFavoriteCuisine(Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []);
+        setFavoriteCuisine(
+          Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []
+        );
         setAllergies(Array.isArray(data.allergies) ? data.allergies : []);
-        setDietaryRestrictions(Array.isArray(data.dietary_restrictions) ? data.dietary_restrictions : []);
+        setDietaryRestrictions(
+          Array.isArray(data.dietary_restrictions)
+            ? data.dietary_restrictions
+            : []
+        );
         setLoading(false);
       })
       .catch((err) => {
@@ -87,7 +122,9 @@ export default function ProfilePage() {
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      setFavoriteCuisine(Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []);
+      setFavoriteCuisine(
+        Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []
+      );
       setEditingCuisine(false);
       setNewCuisineInput("");
       setCuisineMessage("Favorite cuisines updated!");
@@ -183,7 +220,7 @@ export default function ProfilePage() {
       handleAddDietaryRestriction();
     }
   };
-  
+
   const handleAddDietaryRestriction = () => {
     const trimmed = newDietaryRestrictionInput.trim();
     if (trimmed && !dietaryRestrictions.includes(trimmed)) {
@@ -193,7 +230,9 @@ export default function ProfilePage() {
   };
 
   const handleRemoveDietaryRestriction = (restrictionToRemove) => {
-    setDietaryRestrictions(dietaryRestrictions.filter((r) => r !== restrictionToRemove));
+    setDietaryRestrictions(
+      dietaryRestrictions.filter((r) => r !== restrictionToRemove)
+    );
   };
 
   const handleSaveDietaryRestrictions = async () => {
@@ -206,7 +245,11 @@ export default function ProfilePage() {
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      setDietaryRestrictions(Array.isArray(data.dietary_restrictions) ? data.dietary_restrictions : []);
+      setDietaryRestrictions(
+        Array.isArray(data.dietary_restrictions)
+          ? data.dietary_restrictions
+          : []
+      );
       setEditingDietaryRestrictions(false);
       setNewDietaryRestrictionInput("");
       setDietaryMessage("Dietary restrictions updated!");
@@ -253,18 +296,22 @@ export default function ProfilePage() {
                         style={{ fontSize: "0.6rem" }}
                         onClick={() => handleRemoveCuisine(cuisine)}
                         aria-label="Remove"
-                      >X</button>
+                      ></button>
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted fst-italic">No cuisines selected yet.</p>
+                <p className="text-muted fst-italic">
+                  No cuisines selected yet.
+                </p>
               )}
             </div>
 
             {/* Quick select from common cuisines */}
             <div className="mb-3">
-              <label className="form-label small text-muted">Quick select:</label>
+              <label className="form-label small text-muted">
+                Quick select:
+              </label>
               <div className="d-flex flex-wrap gap-2">
                 {commonCuisines
                   .filter((c) => !favoriteCuisine.includes(c))
@@ -318,7 +365,11 @@ export default function ProfilePage() {
                   fetch("/api/profile", { credentials: "same-origin" })
                     .then((res) => res.json())
                     .then((data) => {
-                      setFavoriteCuisine(Array.isArray(data.favorite_cuisine) ? data.favorite_cuisine : []);
+                      setFavoriteCuisine(
+                        Array.isArray(data.favorite_cuisine)
+                          ? data.favorite_cuisine
+                          : []
+                      );
                     });
                 }}
               >
@@ -386,18 +437,22 @@ export default function ProfilePage() {
                         style={{ fontSize: "0.6rem" }}
                         onClick={() => handleRemoveAllergy(allergy)}
                         aria-label="Remove"
-                      >X</button>
+                      ></button>
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted fst-italic">No allergies specified yet.</p>
+                <p className="text-muted fst-italic">
+                  No allergies specified yet.
+                </p>
               )}
             </div>
 
             {/* Quick select from common allergies */}
             <div className="mb-3">
-              <label className="form-label small text-muted">Quick select:</label>
+              <label className="form-label small text-muted">
+                Quick select:
+              </label>
               <div className="d-flex flex-wrap gap-2">
                 {commonAllergies
                   .filter((a) => !allergies.includes(a))
@@ -432,10 +487,7 @@ export default function ProfilePage() {
               </button>
             </div>
             <div className="d-flex gap-2">
-              <button
-                className="btn btn-danger"
-                onClick={handleSaveAllergies}
-              >
+              <button className="btn btn-danger" onClick={handleSaveAllergies}>
                 Save
               </button>
               <button
@@ -447,7 +499,9 @@ export default function ProfilePage() {
                   fetch("/api/profile", { credentials: "same-origin" })
                     .then((res) => res.json())
                     .then((data) => {
-                      setAllergies(Array.isArray(data.allergies) ? data.allergies : []);
+                      setAllergies(
+                        Array.isArray(data.allergies) ? data.allergies : []
+                      );
                     });
                 }}
               >
@@ -511,20 +565,26 @@ export default function ProfilePage() {
                         type="button"
                         className="btn-close btn-close-black ms-2"
                         style={{ fontSize: "0.6rem" }}
-                        onClick={() => handleRemoveDietaryRestriction(restriction)}
+                        onClick={() =>
+                          handleRemoveDietaryRestriction(restriction)
+                        }
                         aria-label="Remove"
-                      >X</button>
+                      ></button>
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted fst-italic">No restrictions specified yet.</p>
+                <p className="text-muted fst-italic">
+                  No restrictions specified yet.
+                </p>
               )}
             </div>
 
             {/* Quick select from common dietary restrictions */}
             <div className="mb-3">
-              <label className="form-label small text-muted">Quick select:</label>
+              <label className="form-label small text-muted">
+                Quick select:
+              </label>
               <div className="d-flex flex-wrap gap-2">
                 {commonDietaryRestrictions
                   .filter((r) => !dietaryRestrictions.includes(r))
@@ -533,7 +593,9 @@ export default function ProfilePage() {
                       key={restriction}
                       type="button"
                       className="btn btn-sm btn-outline-info"
-                      onClick={() => handleSelectCommonDietaryRestriction(restriction)}
+                      onClick={() =>
+                        handleSelectCommonDietaryRestriction(restriction)
+                      }
                     >
                       + {restriction}
                     </button>
@@ -574,7 +636,11 @@ export default function ProfilePage() {
                   fetch("/api/profile", { credentials: "same-origin" })
                     .then((res) => res.json())
                     .then((data) => {
-                      setDietaryRestrictions(Array.isArray(data.dietary_restrictions) ? data.dietary_restrictions : []);
+                      setDietaryRestrictions(
+                        Array.isArray(data.dietary_restrictions)
+                          ? data.dietary_restrictions
+                          : []
+                      );
                     });
                 }}
               >

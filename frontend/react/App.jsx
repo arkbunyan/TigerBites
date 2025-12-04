@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HomePage from "./pages/HomePage.jsx";
+import DiscoverPage from "./pages/DiscoverPage.jsx";
 import RestaurantPage from "./pages/RestaurantPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import MapPage from "./pages/MapPage.jsx";
@@ -9,6 +9,7 @@ import LogoutCasPage from "./pages/LogoutCasPage.jsx";
 import LogoutCasLandingPage from "./pages/LogoutCasLandingPage.jsx";
 import GroupsPage from "./pages/GroupPage.jsx";
 import HeaderNav from "./components/HeaderNav.jsx";
+import HomePage from "./pages/HomePage.jsx";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
 
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/restaurants/:restId" element={<RestaurantPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/map" element={<MapPage />} />

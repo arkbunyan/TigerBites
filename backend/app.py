@@ -65,6 +65,12 @@ def map_page():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
+# Serve discover page
+@app.route('/discover', methods=['GET'])
+def discover_page():
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
+
 # Serve group page
 @app.route('/group', methods=['GET'])
 def group_page():

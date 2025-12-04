@@ -1,43 +1,27 @@
-import React, { useEffect, useState } from "react";
-import RestaurantList from "../components/RestaurantList.jsx";
-import SearchForm from "../components/SearchForm.jsx";
+import React from "react";
 
 const HomePage = () => {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch("/api/home")
-      .then((res) => res.json())
-      .then((data) => setData(data));
-  }, []);
-
-  const handleSearch = ({ name, category }) => {
-    const params = new URLSearchParams();
-    if (name) params.append("name", name);
-    if (category) params.append("category", category);
-
-    fetch(`/api/search?${params.toString()}`)
-      .then((res) => res.json())
-      .then((result) => {
-        if (result.error) {
-          console.error(result.error);
-          setData({ restaurants: [] });
-        } else {
-          setData({ restaurants: result.restaurants });
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        setData({ restaurants: [] });
-      });
-  };
-
-  if (!data) return <p>Loading...</p>;
-
   return (
     <div>
-      <SearchForm onSearch={handleSearch} />
-      <RestaurantList restaurants={data.restaurants} />
+      <div className="d-flex align-items-center">
+        <img
+          src="../static/nassaustreet.png"
+          alt="Tiger logo"
+          style={{ height: "44px", width: "44px", marginRight: "10px" }}
+        />
+      </div>
+      <div className="card vh-100 vw-100 d-flex justify-content-center align-items-center position-relative">
+        <img
+          className="card-img"
+          src="../static/nassaustreet.jpeg"
+          alt="Card image"
+        ></img>
+        <div className="card-img-overlay bg-dark bg-opacity-50">
+          <h1 className="text-white fw-bold position-relative">
+            Welcome to TigerBites
+          </h1>
+        </div>
+      </div>
     </div>
   );
 };

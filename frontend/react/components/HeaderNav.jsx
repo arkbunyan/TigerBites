@@ -31,7 +31,7 @@ const HeaderNav = () => {
       <div className="container-fluid py-3 d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">
           <img
-            src="../../static/tiger.ico"
+            src="../static/tiger.ico"
             alt="Tiger logo"
             style={{ height: "44px", width: "44px", marginRight: "10px" }}
           />
@@ -43,7 +43,7 @@ const HeaderNav = () => {
         <div className="d-flex align-items-center">
           <ul className="navbar-nav d-flex flex-row align-items-center">
             <li className="nav-item mx-3">
-              <a className="nav-link text-dark fw-semibold" href="/">
+              <a className="nav-link text-dark fw-semibold" href="/discover">
                 Discover
               </a>
             </li>
