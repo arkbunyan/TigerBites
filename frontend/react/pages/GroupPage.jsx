@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import RestaurantCard from "../components/RestaurantCard.jsx";
 
 const GroupsPage = () => {
   const [groups, setGroups] = useState([]);
@@ -248,7 +249,7 @@ const GroupsPage = () => {
       {actionMessage && <div className="alert alert-info py-2 my-2">{actionMessage}</div>}
 
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <button className="btn btn-primary" onClick={() => setShowCreate(s => !s)}>
+        <button className="btn" onClick={() => setShowCreate(s => !s)} style={{ backgroundColor: "#FF5F0D" }}>
           {showCreate ? 'Cancel' : '+ Create New Group'}
         </button>
       </div>
@@ -282,9 +283,9 @@ const GroupsPage = () => {
           <ul className="list-group">
             {groups.map(g => (
               <li key={g.id} className={`list-group-item d-flex justify-content-between align-items-center ${selectedGroupId === g.id ? 'active' : ''}`}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: 'pointer'}}
                   onClick={() => loadGroupDetails(g.id)}>
-                <span>{g.group_name}</span>
+                <span >{g.group_name}</span>
                 {g.selected_restaurant_id && (
                   <small className="badge bg-light text-dark">
                     {(() => {
@@ -342,6 +343,37 @@ const GroupsPage = () => {
                 )}
                 {loadingPreferences && <p className="text-muted fst-italic">Loading preferences...</p>}
 
+                {/* Recommended matches section: show compact restaurant cards matching recommended cuisines */}
+                {groupPreferences && restaurants && restaurants.length > 0 && (
+                  (() => {
+                    const recs = (groupPreferences.recommended_cuisines || []).map(c => c.trim().toLowerCase());
+                    const matches = restaurants.filter(r => {
+                      const cat = (r.category || '').trim().toLowerCase();
+                      return cat && recs.includes(cat);
+                    });
+                    if (matches.length === 0) {
+                      return (
+                        <div className="mb-4">
+                          <h6 className="mb-2">Recommended Matches</h6>
+                          <p className="text-muted fst-italic">No matching restaurants for recommended cuisines yet.</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="mb-4">
+                        <h6 className="mb-2">Recommended Matches</h6>
+                        <div className="row g-3">
+                          {matches.map(rest => (
+                            <div key={rest.id} className="col-md-4 col-sm-6">
+                              <RestaurantCard rest={rest} compact={true} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
+
                 <div className="mb-3">
                   <label className="form-label">Selected Restaurant</label>
                   <select className="form-select" disabled={!isLeader()} value={groupDetails.selected_restaurant_id || ''} onChange={handleSetRestaurant}>
@@ -365,7 +397,7 @@ const GroupsPage = () => {
                 <ul className="list-group mb-3">
                   {groupDetails.members.map(m => (
                     <li key={m.netid} className="list-group-item d-flex justify-content-between align-items-center">
-                      <span>{m.fullname || m.firstname || m.netid} {m.role === 'leader' && <span className="badge bg-primary ms-2">Leader</span>}</span>
+                      <span>{m.fullname || m.firstname || m.netid} {m.role === 'leader' && <span className="badge ms-2" style={{ backgroundColor: "#FF5F0D" }}>Leader</span>}</span>
                       {m.role !== 'leader' && (
                         <button className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveMember(m.netid)}>Remove</button>
                       )}

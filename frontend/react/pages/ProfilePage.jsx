@@ -384,7 +384,7 @@ export default function ProfilePage() {
 
       <div
         className="allergies-section mt-4 p-3 border rounded"
-        style={{ backgroundColor: "#fff5f5" }}
+        style={{ backgroundColor: "#f8f9fa" }}
       >
         <h3 className="mb-3">Allergies</h3>
         {editingAllergies ? (
@@ -396,7 +396,7 @@ export default function ProfilePage() {
                     <span
                       key={index}
                       className="badge d-flex align-items-center"
-                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D" }}
+                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D", color: "white" }}
                     >
                       {allergy}
                       <button
@@ -428,7 +428,7 @@ export default function ProfilePage() {
                     <button
                       key={allergy}
                       type="button"
-                      className="btn btn-sm btn-outline-danger"
+                      className="btn btn-sm btn-outline-secondary"
                       onClick={() => handleSelectCommonAllergy(allergy)}
                     >
                       + {allergy}
@@ -448,14 +448,18 @@ export default function ProfilePage() {
                 placeholder="Or type your own..."
               />
               <button
-                className="btn btn-outline-danger"
+                className="btn btn-outline-secondary"
                 onClick={handleAddAllergy}
               >
                 Add
               </button>
             </div>
             <div className="d-flex gap-2">
-              <button className="btn btn-danger" onClick={handleSaveAllergies}>
+              <button
+                className="btn"
+                style={{ backgroundColor: "#FF5F0D", color: "white" }}
+                onClick={handleSaveAllergies}
+              >
                 Save
               </button>
               <button
@@ -484,8 +488,10 @@ export default function ProfilePage() {
                 {allergies.map((allergy, index) => (
                   <span
                     key={index}
-                    className="badge bg-danger"
+                    className="badge"
                     style={{
+                      backgroundColor: "#FF5F0D",
+                      color: "white",
                       fontSize: "0.9rem",
                       padding: "0.5rem",
                     }}
@@ -498,7 +504,8 @@ export default function ProfilePage() {
               <p className="text-muted fst-italic">None specified</p>
             )}
             <button
-              className="btn btn-sm btn-danger"
+              className="btn btn-sm"
+              style={{ backgroundColor: "#FF5F0D", color: "white" }}
               onClick={() => setEditingAllergies(true)}
             >
               Edit
@@ -514,7 +521,7 @@ export default function ProfilePage() {
 
       <div
         className="dietary-restrictions-section mt-4 p-3 border rounded"
-        style={{ backgroundColor: "#f0f8ff" }}
+        style={{ backgroundColor: "#f8f9fa" }}
       >
         <h3 className="mb-3">Dietary Restrictions</h3>
         {editingDietaryRestrictions ? (
@@ -526,7 +533,7 @@ export default function ProfilePage() {
                     <span
                       key={index}
                       className="badge d-flex align-items-center"
-                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D" }}
+                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D", color: "white" }}
                     >
                       {restriction}
                       <button
@@ -560,7 +567,7 @@ export default function ProfilePage() {
                     <button
                       key={restriction}
                       type="button"
-                      className="btn btn-sm btn-outline-info"
+                      className="btn btn-sm btn-outline-secondary"
                       onClick={() =>
                         handleSelectCommonDietaryRestriction(restriction)
                       }
@@ -582,7 +589,7 @@ export default function ProfilePage() {
                 placeholder="Or type your own..."
               />
               <button
-                className="btn btn-outline-info"
+                className="btn btn-outline-secondary"
                 onClick={handleAddDietaryRestriction}
               >
                 Add
@@ -590,7 +597,8 @@ export default function ProfilePage() {
             </div>
             <div className="d-flex gap-2">
               <button
-                className="btn btn-info"
+                className="btn"
+                style={{ backgroundColor: "#FF5F0D", color: "white" }}
                 onClick={handleSaveDietaryRestrictions}
               >
                 Save
@@ -623,8 +631,10 @@ export default function ProfilePage() {
                 {dietaryRestrictions.map((restriction, index) => (
                   <span
                     key={index}
-                    className="badge bg-info"
+                    className="badge"
                     style={{
+                      backgroundColor: "#FF5F0D",
+                      color: "white",
                       fontSize: "0.9rem",
                       padding: "0.5rem",
                     }}
@@ -637,7 +647,8 @@ export default function ProfilePage() {
               <p className="text-muted fst-italic">None specified</p>
             )}
             <button
-              className="btn btn-sm btn-info"
+              className="btn btn-sm"
+              style={{ backgroundColor: "#FF5F0D", color: "white" }}
               onClick={() => setEditingDietaryRestrictions(true)}
             >
               Edit
