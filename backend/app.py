@@ -138,6 +138,7 @@ def search_results():
 
 # Retrieve restaurant details and menu
 @app.route('/api/restaurants/<rest_id>', methods=['GET'])
+@app.route('/back_office/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
     ok_r, rest = database.load_restaurant_by_id(rest_id)
     if not ok_r:
@@ -199,11 +200,11 @@ def delete_user_review(review_id):
         return flask.jsonify({"error": result}), 400
     return flask.jsonify({"message": "Review deleted"}), 200
 
-# @app.route('/protected')
-# def protected():
-#     # Force CAS authentication (will redirect to CAS if needed)
-#     auth.authenticate()
-#     return f"Hello {auth.get_username()}! This is protected."
+@app.route('/back_office', methods=['GET'])
+def back_office():
+    # Force CAS authentication (will redirect to CAS if needed)
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
 
 # Example API endpoint that requires authentication
 @app.route('/data')

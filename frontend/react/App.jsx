@@ -10,13 +10,14 @@ import LogoutCasLandingPage from "./pages/LogoutCasLandingPage.jsx";
 import GroupsPage from "./pages/GroupPage.jsx";
 import HeaderNav from "./components/HeaderNav.jsx";
 import HomePage from "./pages/HomePage.jsx";
+import BackOffice_Home from "./pages/backoffice/BackOffice_Home.jsx";
+import BackOffice_Restaurant from "./pages/backoffice/BackOffice_Restaurant.jsx"
 
 const App = () => {
   return (
     <Router>
       <div>
         <HeaderNav />
-
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/discover" element={<DiscoverPage />} />
@@ -30,6 +31,8 @@ const App = () => {
             path="/logout_cas_landing"
             element={<LogoutCasLandingPage />}
           />
+          <Route path="/back_office" element={<BackOffice_Home />} />
+          <Route path="/back_office/restaurants/:restId" element={<BackOffice_Restaurant />} />
         </Routes>
       </div>
     </Router>
