@@ -1,8 +1,8 @@
-
 """
 TigerBites CSV Loader (restaurants)
 - Reads Restaurant Data.csv and upserts into public.restaurants
 - Defaults to a CSV that lives next to this file unless a path is passed
+- Supports 'picture' and 'yelp_rating' columns
 """
 
 import csv
@@ -20,7 +20,6 @@ from data_management.db_manager import (
     bulk_insert_restaurants,
 )
 
-
 def to_float(x):
     if x is None:
         return None
@@ -34,7 +33,6 @@ def to_float(x):
             return float(Decimal(s))
         except InvalidOperation:
             return None
-
 
 def load_csv(csv_path: Path):
     rows = []
@@ -56,8 +54,8 @@ def load_csv(csv_path: Path):
             rows.append(row)
     return rows
 
-
 def main():
+    # If no arg, default to sibling CSV named "Restaurant Data.csv"
     if len(sys.argv) >= 2:
         csv_path = Path(sys.argv[1])
     else:
@@ -67,6 +65,7 @@ def main():
         print(f"CSV not found: {csv_path}")
         sys.exit(2)
 
+    # Ensure schema and indexes
     create_restaurants_table()
     migrate_restaurant_new_columns()
     create_menu_items_table()
@@ -77,7 +76,6 @@ def main():
     rows = load_csv(csv_path)
     n = bulk_insert_restaurants(rows)
     print(f"Inserted/updated {n} restaurants from {csv_path.name}.")
-
 
 if __name__ == "__main__":
     main()

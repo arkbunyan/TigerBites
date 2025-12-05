@@ -1,4 +1,3 @@
-
 """
 Load menu items CSVs into public.menu_items, mapped to the correct restaurant.
 Expected CSV headers: Item, Price, Description
@@ -24,13 +23,13 @@ from data_management.db_manager import (
     bulk_upsert_menu_items,
 )
 
-
 def to_avg_price(s):
     if s is None:
         return None
     text = str(s).strip()
     if not text or text.lower() == "nan":
         return None
+    # Pull numbers like 9 or 9.99 from the string and average them
     nums = re.findall(r"\d+(?:\.\d+)?", text.replace(',', ''))
     if not nums:
         try:
@@ -42,7 +41,6 @@ def to_avg_price(s):
         return float(mean(vals))
     except Exception:
         return vals[0] if vals else None
-
 
 def read_menu_csv(csv_path: Path):
     items = []
@@ -66,13 +64,11 @@ def read_menu_csv(csv_path: Path):
                 items.append(item)
     return items
 
-
 def infer_restaurant_name_from_filename(p: Path):
     base = p.stem
     if ' - ' in base:
         return base.split(' - ', 1)[0].strip()
     return base.replace('_', ' ').strip().title()
-
 
 def expand_targets(arg: str):
     path = Path(arg)
@@ -81,7 +77,6 @@ def expand_targets(arg: str):
     if any(ch in arg for ch in ['*', '?', '[']):
         return sorted(Path('.').glob(arg))
     return [path]
-
 
 def main(argv):
     if len(argv) <= 1:
@@ -119,7 +114,6 @@ def main(argv):
 
     print(f"Done. Total menu items upserted: {total_items}")
     return 0
-
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv))

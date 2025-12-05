@@ -51,6 +51,19 @@ def create_restaurants_table():
         cur.execute(ddl)
         conn.commit()
 
+def migrate_restaurant_new_columns():
+    """Add picture (TEXT) and yelp_rating (DOUBLE PRECISION) if missing."""
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("""
+            ALTER TABLE public.restaurants
+            ADD COLUMN IF NOT EXISTS picture TEXT;
+        """)
+        cur.execute("""
+            ALTER TABLE public.restaurants
+            ADD COLUMN IF NOT EXISTS yelp_rating DOUBLE PRECISION;
+        """)
+        conn.commit()
+
 def create_menu_items_table():
     ddl = """
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -78,38 +91,6 @@ def create_users_table():
         name  TEXT,
         fav_restaurant uuid REFERENCES public.restaurants(id)
     );
-    """
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(ddl)
-        conn.commit()
-
-def create_groups_table():
-    """Ensure groups table exists with creator_netid TEXT and selected_restaurant_id UUID.
-    Simplified: no type-conversion blocks; columns added if missing; optional FK added if not present."""
-    ddl = """
-        CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-        CREATE TABLE IF NOT EXISTS public.groups (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            group_name TEXT NOT NULL,
-            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            creator_netid TEXT REFERENCES public.users(netid) ON DELETE CASCADE,
-            selected_restaurant_id UUID
-        );
-    """
-    with get_conn() as conn, conn.cursor() as cur:
-        cur.execute(ddl)
-        conn.commit()
-
-def create_group_members_table():
-    """Create group_members table with netid-based membership."""
-    ddl = """
-        CREATE TABLE IF NOT EXISTS public.group_members (
-            group_id UUID NOT NULL REFERENCES public.groups(id) ON DELETE CASCADE,
-            user_netid TEXT NOT NULL REFERENCES public.users(netid) ON DELETE CASCADE,
-            role TEXT NOT NULL DEFAULT 'member',
-            joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            PRIMARY KEY (group_id, user_netid)
-        );
     """
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute(ddl)
@@ -277,10 +258,9 @@ def bulk_upsert_menu_items(restaurant_id, items):
 
 if __name__ == "__main__":
     create_restaurants_table()
+    migrate_restaurant_new_columns()
     create_menu_items_table()
     create_users_table()
-    create_groups_table()
-    create_group_members_table()
     ensure_restaurants_uniqueness()
     ensure_menu_items_uniqueness()
     print("Tables and indexes ensured.")
