@@ -65,7 +65,7 @@ const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
                 <small className="text-muted">
                   {formatDate(review.created_at)}
                 </small>
-                {currentUsername === review.username && onDeleteReview && (
+              {(
                   <button
                     className="btn btn-sm btn-outline-danger ms-2"
                     onClick={() => handleDelete(review.id)}

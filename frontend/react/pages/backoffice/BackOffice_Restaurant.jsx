@@ -78,12 +78,6 @@ const RestaurantPage = () => {
 
       <div className="container mt-4">
         <hr />
-        {currentUsername && (
-          <ReviewForm
-            restaurantId={restId}
-            onReviewSubmitted={handleReviewSubmitted}
-          />
-        )}
         <ReviewList
           reviews={reviews}
           currentUsername={currentUsername}

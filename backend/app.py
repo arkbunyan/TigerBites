@@ -354,6 +354,19 @@ def get_group_preferences(group_id):
         return flask.jsonify({"error": prefs}), 400
     return flask.jsonify({"preferences": prefs})
 
+# Back Office Api Routes ----------------
+@app.route('/api/restaurants/<rest_id>/update', methods=['PUT'])
+def update_restaurant(rest_id):
+    username = _require_auth()
+    data = flask.request.get_json()
+    data = data.get('editedRestaurant')
+    print(data)
+    
+    ok, result = database.update_restaurant(data)
+    if not ok:
+        return flask.jsonify({"error": result}), 400
+    return flask.jsonify({"group": result}), 201
+
 # Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True)

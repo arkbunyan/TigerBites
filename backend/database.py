@@ -178,6 +178,53 @@ def load_menu_for_restaurant(rest_id):
             _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
+    
+def update_restaurant(restaurant):
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                UPDATE restaurants
+                SET
+                    avg_price = %s,
+                    category = %s,
+                    description = %s,
+                    hours = %s,
+                    latitude = %s,
+                    location = %s,
+                    longitude = %s,
+                    name = %s,
+                    picture = %s,
+                    yelp_rating = %s 
+                WHERE id = %s
+                RETURNING *;
+                """
+
+                values = (
+                    restaurant.get('avg_price'),
+                    restaurant.get('category'),
+                    restaurant.get('description'),
+                    restaurant.get('hours'),
+                    restaurant.get('latitude'),
+                    restaurant.get('location'),
+                    restaurant.get('longitude'),
+                    restaurant.get('name'),
+                    restaurant.get('picture'),
+                    restaurant.get('yelp_rating'),
+                    # restaurant.get('website_url'),
+                    restaurant.get('id')
+                )
+
+                cursor.execute(sql, values)
+                updated_restaurant = cursor.fetchone()
+                conn.commit()
+                return [True, dict(updated_restaurant)]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+
 
 def upsert_user(username, email, firstname, fullname):
     """

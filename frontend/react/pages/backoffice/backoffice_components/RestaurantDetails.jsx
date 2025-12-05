@@ -1,18 +1,19 @@
+import { expectedError } from "@babel/core/lib/errors/rewrite-stack-trace";
 import React, { useState, useEffect } from "react";
 
 const RestaurantDetails = ({ restaurant, menuItems }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState({
-  name: "",
-  category: "",
-  hours: "",
-  location: "",
-  avg_price: "",
-  yelp_rating: "",
-  picture: ""
+    name: "",
+    category: "",
+    hours: "",
+    location: "",
+    avg_price: "",
+    yelp_rating: "",
+    picture: ""
 });
-
   const [editedMenu, setEditedMenu] = useState(menuItems || []);
+  const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
   if (restaurant) setEditedRestaurant(restaurant);
@@ -36,8 +37,34 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
     setEditedMenu(updatedMenu);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSaving
+
+
+    try {
+      const response = await fetch(`/api/restaurants/${restaurant.id}/update`, {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ editedRestaurant }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+    } catch (err) {
+      console.error("Failed to update restaurant:", err);
+    } finally {
+      setIsSaving(false)
+    }
+    };
+
+  
   return (
-    
     <div className="container my-5">
       <h2>  
         Edit {editedRestaurant.name}
@@ -57,8 +84,18 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
           )}
 
+          <button
+            className="btn btn-primary mt-2"
+            onClick={handleSubmit}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
+
+
           <div className="card-body">
-            {/* ✅ NAME */}
+            {/*NAME */}
+            Name:
             <input
               className="form-control mb-2"
               value={editedRestaurant.name || ""}
@@ -68,6 +105,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*CATEGORY*/}
+            Category:
             <input
               className="form-control mb-2"
               value={editedRestaurant.category || ""}
@@ -77,6 +115,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*HOURS*/}
+            Hours:
             <input
               className="form-control mb-2"
               value={editedRestaurant.hours || ""}
@@ -86,6 +125,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*LOCATION*/}
+            Location:
             <input
               className="form-control mb-2"
               value={editedRestaurant.location || ""}
@@ -95,6 +135,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*PRICE*/}
+            Avg Price:
             <input
               type="number"
               className="form-control mb-2"
@@ -105,6 +146,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*YELP*/}
+            Yelp Rating
             <input
               type="number"
               step="0.1"
@@ -117,7 +159,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
           </div>
         </div>
 
-        {/* ✅ MENU */}
+        {/* MENU */}
         <div className="card shadow-sm border-0">
           <div className="card-body">
             <div

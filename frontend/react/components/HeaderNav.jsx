@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const HeaderNav = () => {
   const [user, setUser] = useState(null);
   const [datetime, setDatetime] = useState(new Date());
+
+  const location = useLocation();
+
+  const isBackOffice =
+    location.pathname.startsWith("/back_office")
+
 
   useEffect(() => {
     fetch("/api/profile")
@@ -27,16 +34,17 @@ const HeaderNav = () => {
   };
 
   return (
-    <header className="shadow-sm w-100" style={{ backgroundColor: "#FF5F0D" }}>
+    <header className="shadow-sm w-100" style={{
+        backgroundColor: isBackOffice ? "#6189FF" : "#FF5F0D" }}>
       <div className="container-fluid py-3 d-flex align-items-center justify-content-between">
         <div className="d-flex align-items-center">
-          <img
+          <img 
             src="../static/tiger.ico"
             alt="Tiger logo"
             style={{ height: "44px", width: "44px", marginRight: "10px" }}
           />
           <a href="/" className="fw-bold fs-3 text-dark text-decoration-none">
-            TigerBites
+            {isBackOffice ? "TigerBites Back Office" : "TigerBites" }
           </a>
         </div>
 
