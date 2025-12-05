@@ -13,6 +13,8 @@ const RestaurantPage = () => {
   const [currentUsername, setCurrentUsername] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [correctionText, setCorrectionText] = useState("");
 
   useEffect(() => {
     // Fetch restaurant and menu
@@ -69,6 +71,13 @@ const RestaurantPage = () => {
     setReviews(reviews.filter((r) => r.id !== reviewId));
   };
 
+  const handleCorrectionSubmit = () => {
+    console.log("Correction submitted:", correctionText);
+    alert("Thank you for your correction! We will review it shortly.");
+    setShowModal(false);
+    setCorrectionText("");
+  };
+
   if (loading) return <p>Loading restaurant...</p>;
   if (error) return <p>{error}</p>;
 
@@ -78,6 +87,15 @@ const RestaurantPage = () => {
 
       <div className="container mt-4">
         <hr />
+        <div className="d-flex mb-3">
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            Submit a correction on details or menu!
+          </button>
+        </div>
+
         {currentUsername && (
           <ReviewForm
             restaurantId={restId}
@@ -96,6 +114,58 @@ const RestaurantPage = () => {
           />
         )}
       </div>
+      {showModal && (
+        <div
+          className="modal"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "800px",
+              width: "600px",
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <h5 className="mb-3">Submit a Correction</h5>
+            <textarea
+              className="form-control mb-3"
+              rows="4"
+              placeholder="Enter your correction here..."
+              value={correctionText}
+              onChange={(e) => setCorrectionText(e.target.value)}
+            />
+            <div className="d-flex justify-content-end">
+              <button
+                className="btn btn-secondary me-2"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleCorrectionSubmit}
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
