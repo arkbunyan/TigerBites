@@ -271,8 +271,8 @@ export default function ProfilePage() {
                   {favoriteCuisine.map((cuisine, index) => (
                     <span
                       key={index}
-                      className="badge bg-secondary d-flex align-items-center"
-                      style={{ fontSize: "0.9rem", padding: "0.5rem" }}
+                      className="badge d-flex align-items-center"
+                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D" }}
                     >
                       {cuisine}
                       <button
@@ -395,8 +395,8 @@ export default function ProfilePage() {
                   {allergies.map((allergy, index) => (
                     <span
                       key={index}
-                      className="badge bg-danger d-flex align-items-center"
-                      style={{ fontSize: "0.9rem", padding: "0.5rem" }}
+                      className="badge d-flex align-items-center"
+                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D" }}
                     >
                       {allergy}
                       <button
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                         style={{ fontSize: "0.6rem" }}
                         onClick={() => handleRemoveAllergy(allergy)}
                         aria-label="Remove"
-                      >X</button>
+                      ></button>
                     </span>
                   ))}
                 </div>
@@ -525,19 +525,19 @@ export default function ProfilePage() {
                   {dietaryRestrictions.map((restriction, index) => (
                     <span
                       key={index}
-                      className="badge bg-info d-flex align-items-center"
-                      style={{ fontSize: "0.9rem", padding: "0.5rem" }}
+                      className="badge d-flex align-items-center"
+                      style={{ fontSize: "0.9rem", padding: "0.5rem", backgroundColor: "#FF5F0D" }}
                     >
                       {restriction}
                       <button
                         type="button"
-                        className="btn-close btn-close-black ms-2"
+                        className="btn-close btn-close-white ms-2"
                         style={{ fontSize: "0.6rem" }}
                         onClick={() =>
                           handleRemoveDietaryRestriction(restriction)
                         }
                         aria-label="Remove"
-                      >X</button>
+                      ></button>
                     </span>
                   ))}
                 </div>

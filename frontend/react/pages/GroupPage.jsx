@@ -312,7 +312,7 @@ const GroupsPage = () => {
                       <strong>Recommended Cuisines:</strong>{' '}
                       {groupPreferences.recommended_cuisines.length > 0 ? (
                         groupPreferences.recommended_cuisines.map((c, i) => (
-                          <span key={i} className="badge bg-success me-1">{c}</span>
+                          <span key={i} className="badge me-1" style={{ backgroundColor: "#FF5F0D" }}>{c}</span>
                         ))
                       ) : (
                         <span className="text-muted fst-italic">No preferences yet</span>
@@ -322,7 +322,7 @@ const GroupsPage = () => {
                       <strong>Dietary Restrictions:</strong>{' '}
                       {groupPreferences.dietary_restrictions.length > 0 ? (
                         groupPreferences.dietary_restrictions.map((d, i) => (
-                          <span key={i} className="badge bg-warning text-dark me-1">{d}</span>
+                          <span key={i} className="badge me-1" style={{ backgroundColor: "#FF5F0D" }}>{d}</span>
                         ))
                       ) : (
                         <span className="text-muted fst-italic">None</span>
@@ -332,7 +332,7 @@ const GroupsPage = () => {
                       <strong>Allergies:</strong>{' '}
                       {groupPreferences.allergies.length > 0 ? (
                         groupPreferences.allergies.map((a, i) => (
-                          <span key={i} className="badge bg-danger me-1">{a}</span>
+                          <span key={i} className="badge me-1" style={{ backgroundColor: "#FF5F0D" }}>{a}</span>
                         ))
                       ) : (
                         <span className="text-muted fst-italic">None</span>

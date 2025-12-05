@@ -4,6 +4,7 @@ import contextlib
 from dotenv import load_dotenv
 import psycopg2
 import psycopg2.extras
+from psycopg2.pool import SimpleConnectionPool
 
 load_dotenv()
 # Read-only access for the web app layer (Postgres)
@@ -13,21 +14,35 @@ if not DATABASE_URL:
         "Environment variable TB_DATABASE_URL is not set. "
         "Set it to a valid Postgres URL (eg. postgresql://user:pass@host:port/db)."
     )
+
+# Initialize a global connection pool for Postgres connections
+# Keep maxconn within hosting/database limits
+pool = SimpleConnectionPool(
+    minconn=1,
+    maxconn=10,
+    dsn=DATABASE_URL
+)
 def _err_response(ex):
     error_message = str(sys.argv[0] + ': ')
     print(f"{error_message} {str(ex)}", file=sys.stderr)
     return [False, 'A server error occurred. Please contact the system administrator.']
 
 def _get_conn():
-    # Return a new psycopg2 connection. Caller should use context manager.
-    return psycopg2.connect(DATABASE_URL)
+    """Borrow a connection from the pool."""
+    return pool.getconn()
+
+def _put_conn(conn):
+    """Return a connection to the pool."""
+    if conn is not None:
+        pool.putconn(conn)
 
 def load_all_restaurants():
     """
     Return all restaurants with id, name, category, hours, avg_price.
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = "SELECT * FROM restaurants"
                 cursor.execute(sql)
@@ -50,8 +65,9 @@ def load_all_restaurants():
                         'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                     }
                     response.append(entry)
-
                 return [True, response]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -64,7 +80,8 @@ def restaurant_search(params):
     category = params[1] if len(params) > 1 else ''
 
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Use ILIKE for case-insensitive substring match in Postgres
                 sql = (
@@ -93,15 +110,17 @@ def restaurant_search(params):
                         'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                     }
                     response.append(entry)
-
                 return [True, response]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def load_restaurant_by_id(rest_id):
     # return one restaurant dict by id.
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = "SELECT * FROM restaurants WHERE id = %s"
                 cursor.execute(sql, (rest_id,))
@@ -124,6 +143,8 @@ def load_restaurant_by_id(rest_id):
                     'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
                 }
                 return [True, data]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -133,7 +154,8 @@ def load_menu_for_restaurant(rest_id):
     Each item has: name, description, price_cents, price (formatted or None)
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
                     "SELECT * "
@@ -152,6 +174,8 @@ def load_menu_for_restaurant(rest_id):
                     })
 
                 return [True, items]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -161,7 +185,8 @@ def upsert_user(username, email, firstname, fullname):
     Username is stored as 'netid'. Returns [True, user_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = """
                 INSERT INTO public.users (netid, email, firstname, fullname)
@@ -195,6 +220,8 @@ def upsert_user(username, email, firstname, fullname):
                         user_dict['dietary_restrictions'] = []
                     return [True, user_dict]
                 return [False, 'Failed to insert/update user']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         print(f"DEBUG upsert_user: Exception occurred: {ex}")
         return _err_response(ex)
@@ -205,7 +232,8 @@ def get_user_by_username(username):
     Returns [True, user_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions FROM public.users WHERE netid = %s"
                 cursor.execute(sql, (username,))
@@ -228,6 +256,8 @@ def get_user_by_username(username):
                         user_dict['dietary_restrictions'] = []
                     return [True, user_dict]
                 return [False, 'User not found']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -238,7 +268,8 @@ def update_favorite_cuisine(username, favorite_cuisine):
     Returns [True, user_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # If favorite_cuisine is a list, use it as-is; otherwise convert to list
                 if isinstance(favorite_cuisine, list):
@@ -273,6 +304,8 @@ def update_favorite_cuisine(username, favorite_cuisine):
                         user_dict['dietary_restrictions'] = []
                     return [True, user_dict]
                 return [False, 'User not found']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -283,7 +316,8 @@ def update_allergies(username, allergies):
     Returns [True, user_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # If allergies is a list, use it as-is; otherwise convert to list
                 if isinstance(allergies, list):
@@ -318,6 +352,8 @@ def update_allergies(username, allergies):
                         user_dict['dietary_restrictions'] = []
                     return [True, user_dict]
                 return [False, 'User not found']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -328,7 +364,8 @@ def update_dietary_restrictions(username, dietary_restrictions):
     Returns [True, user_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # If dietary_restrictions is a list, use it as-is; otherwise convert to list
                 if isinstance(dietary_restrictions, list):
@@ -363,6 +400,8 @@ def update_dietary_restrictions(username, dietary_restrictions):
                         user_dict['dietary_restrictions'] = []
                     return [True, user_dict]
                 return [False, 'User not found']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
     
@@ -373,7 +412,8 @@ def upsert_review(rest_id, username, rating, comment):
     Returns [True, review_data] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # First get the user_id from netid
                 cursor.execute("SELECT id FROM public.users WHERE netid = %s", (username,))
@@ -401,6 +441,8 @@ def upsert_review(rest_id, username, rating, comment):
                     review_data['id'] = str(review_data['id'])
                     return [True, review_data]
                 return [False, 'Failed to insert review']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -410,7 +452,8 @@ def get_reviews_by_restaurant(rest_id):
     Returns [True, reviews_list] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = """
                 SELECT r.id, r.restaurant_id, r.rating, r.comment, r.created_at,
@@ -432,6 +475,8 @@ def get_reviews_by_restaurant(rest_id):
                     reviews.append(review)
                 
                 return [True, reviews]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -441,7 +486,8 @@ def get_reviews_by_user(username):
     Returns [True, reviews_list] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = """
                 SELECT r.id, r.restaurant_id, r.rating, r.comment, r.created_at,
@@ -464,6 +510,8 @@ def get_reviews_by_user(username):
                     reviews.append(review)
                 
                 return [True, reviews]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -473,7 +521,8 @@ def delete_review(review_id, username):
     Returns [True, None] or [False, error_msg].
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = """
                 DELETE FROM public.reviews r
@@ -488,6 +537,8 @@ def delete_review(review_id, username):
                 if row:
                     return [True, None]
                 return [False, 'Review not found or unauthorized']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
     
@@ -528,7 +579,8 @@ def delete_review(review_id, username):
 def create_group(group_name, creator_netid, selected_restaurant_id=None):
     """Create a new group and add creator (netid) as leader."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Validate creator exists
                 cursor.execute("SELECT netid FROM users WHERE netid = %s", (creator_netid,))
@@ -562,13 +614,16 @@ def create_group(group_name, creator_netid, selected_restaurant_id=None):
                 data['id'] = str(data['id'])
                 data['created_at'] = data['created_at'].isoformat()
                 return [True, data]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def add_member_to_group(group_id, member_netid):
     """Add user by netid to group."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("SELECT netid FROM users WHERE netid = %s", (member_netid,))
                 if cursor.fetchone() is None:
@@ -586,13 +641,16 @@ def add_member_to_group(group_id, member_netid):
                 )
                 conn.commit()
                 return [True, None]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def remove_member_from_group(group_id, member_netid):
     """Remove member by netid."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute(
                     "DELETE FROM group_members WHERE group_id = %s AND user_netid = %s RETURNING group_id",
@@ -603,13 +661,16 @@ def remove_member_from_group(group_id, member_netid):
                 if del_row:
                     return [True, None]
                 return [False, 'Membership not found']
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def update_group_selected_restaurant(group_id, restaurant_id):
     """Update the selected restaurant for a group with option to clear the selection."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Validate restaurant if not None
                 if restaurant_id is not None:
@@ -629,13 +690,16 @@ def update_group_selected_restaurant(group_id, restaurant_id):
                 data['id'] = str(data['id'])
                 data['created_at'] = data['created_at'].isoformat()
                 return [True, data]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def get_group_with_members(group_id):
     """Return group details plus member list."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("""
                     SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at,
@@ -665,13 +729,16 @@ def get_group_with_members(group_id):
                 data['created_at'] = data['created_at'].isoformat()
                 data['members'] = members
                 return [True, data]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def list_groups_for_user(netid):
     """List groups for which netid is a member."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("""
                     SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at
@@ -688,6 +755,8 @@ def list_groups_for_user(netid):
                     d['created_at'] = d['created_at'].isoformat()
                     groups.append(d)
                 return [True, groups]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -698,7 +767,8 @@ def search_users(query, limit=10):
         return [True, []]
     like = f"%{q}%"
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute(
                     """
@@ -719,13 +789,16 @@ def search_users(query, limit=10):
                         'fullname': row.get('fullname')
                     })
                 return [True, results]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
 def get_available_cuisines():
     """Get distinct cuisine/category values from restaurants table."""
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("""
                     SELECT DISTINCT category
@@ -736,6 +809,8 @@ def get_available_cuisines():
                 rows = cursor.fetchall()
                 cuisines = [row['category'] for row in rows]
                 return [True, cuisines]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
@@ -744,7 +819,8 @@ def get_group_preferences(group_id):
     Aggregate favorite cuisines, dietary restrictions, and allergies for all members in a group.
     """
     try:
-        with _get_conn() as conn:
+        conn = _get_conn()
+        try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 # Get all members' preferences
                 cursor.execute("""
@@ -799,6 +875,8 @@ def get_group_preferences(group_id):
                     'allergies': sorted(list(allergies_set)),
                     'cuisine_counts': cuisine_count
                 }]
+        finally:
+            _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
 
