@@ -225,6 +225,22 @@ const GroupsPage = () => {
     }
   };
 
+  const handleClearRestaurant = async () => {
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/restaurant`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant_id: null })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to clear restaurant');
+      setActionMessage('Restaurant selection cleared');
+      setGroupDetails(data.group);
+    } catch (e) {
+      setActionMessage(e.message);
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h2 className="mb-3">Groups</h2>
@@ -334,7 +350,17 @@ const GroupsPage = () => {
                       <option key={r.id} value={r.id}>{r.name}</option>
                     ))}
                   </select>
+                  {groupDetails.selected_restaurant_id && (
+                    <button
+                      className="btn btn-outline-secondary btn-sm mt-2"
+                      onClick={handleClearRestaurant}
+                      disabled={!isLeader()}
+                    >
+                      Clear Selection
+                    </button>
+                  )}
                 </div>
+
                 <h5>Members</h5>
                 <ul className="list-group mb-3">
                   {groupDetails.members.map(m => (

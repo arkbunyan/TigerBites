@@ -607,14 +607,16 @@ def remove_member_from_group(group_id, member_netid):
         return _err_response(ex)
 
 def update_group_selected_restaurant(group_id, restaurant_id):
-    """Update the selected restaurant for a group."""
+    """Update the selected restaurant for a group with option to clear the selection."""
     try:
         with _get_conn() as conn:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                # Validate restaurant
-                cursor.execute("SELECT id FROM restaurants WHERE id = %s", (restaurant_id,))
-                if cursor.fetchone() is None:
-                    return [False, 'Restaurant not found']
+                # Validate restaurant if not None
+                if restaurant_id is not None:
+                    cursor.execute("SELECT id FROM restaurants WHERE id = %s", (restaurant_id,))
+                    if cursor.fetchone() is None:
+                        return [False, 'Restaurant not found']
+                
                 cursor.execute(
                     "UPDATE groups SET selected_restaurant_id = %s WHERE id = %s RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at",
                     (restaurant_id, group_id)

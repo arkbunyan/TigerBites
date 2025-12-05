@@ -274,7 +274,8 @@ def set_group_restaurant(group_id):
     username = _require_auth()
     data = flask.request.get_json() or {}
     restaurant_id = data.get('restaurant_id')
-    if not restaurant_id:
+    # Allow None to clear selection, but require key in request
+    if 'restaurant_id' not in data:
         return flask.jsonify({"error": "restaurant_id required"}), 400
     ok, group = database.get_group_with_members(group_id)
     if not ok:
@@ -302,8 +303,8 @@ def user_search():
 def get_cuisines():
     """Get list of available cuisine types from restaurants database."""
     auth.authenticate()
-    worked, cuisines = database.get_available_cuisines()
-    if not worked:
+    ok, cuisines = database.get_available_cuisines()
+    if not ok:
         return flask.jsonify({"error": cuisines}), 400
     return flask.jsonify({"cuisines": cuisines})
 
