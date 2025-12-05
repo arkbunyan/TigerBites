@@ -16,7 +16,8 @@ def main():
         sys.exit(1)
 
     try:
-        tigerbites.app.run(host='0.0.0.0', port=port, debug=True)
+        # Disable the Flask reloader to avoid double-running the app (which opens extra DB connections)
+        tigerbites.app.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
     except Exception as ex:
         print(ex, file=sys.stderr)
         sys.exit(1)

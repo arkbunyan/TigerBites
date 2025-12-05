@@ -19,7 +19,7 @@ if not DATABASE_URL:
 # Keep maxconn within hosting/database limits
 pool = SimpleConnectionPool(
     minconn=1,
-    maxconn=10,
+    maxconn=2,  # ultra-conservative to respect role limits
     dsn=DATABASE_URL
 )
 def _err_response(ex):

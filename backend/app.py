@@ -2,6 +2,7 @@ import flask
 import flask_session
 import flask_sqlalchemy
 import os
+import atexit
 from backend import auth
 from backend import database
 from backend.top import app
@@ -15,8 +16,36 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['SQLALCHEMY_DATABASE_URI'] = session_database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SESSION_SQLALCHEMY'] = flask_sqlalchemy.SQLAlchemy(app)
+# Cap SQLAlchemy engine pool size for session store to avoid exceeding DB role limits
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_size': 1,        # keep minimal
+    'max_overflow': 0,     # do not exceed pool_size
+    'pool_pre_ping': True, # detect stale connections
+    'pool_recycle': 1800   # recycle every 30 minutes
+}
+app.config['SESSION_SQLALCHEMY'] = flask_sqlalchemy.SQLAlchemy(
+    app,
+    engine_options=app.config.get('SQLALCHEMY_ENGINE_OPTIONS', {})
+)
 flask_session.Session(app)
+
+# Gracefully close connection pools on app shutdown
+def _dispose_pools():
+    try:
+        # Close psycopg2 pooled connections
+        if hasattr(database, 'pool'):
+            database.pool.closeall()
+    except Exception:
+        pass
+    try:
+        # Dispose SQLAlchemy engine for session store
+        sess_db = app.config.get('SESSION_SQLALCHEMY')
+        if sess_db is not None and hasattr(sess_db, 'engine'):
+            sess_db.engine.dispose()
+    except Exception:
+        pass
+
+atexit.register(_dispose_pools)
 
 # Test React
 @app.route('/', methods=['GET'])
