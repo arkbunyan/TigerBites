@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 const RestaurantCard = ({ rest }) => {
   return (
     <div
-      to={`/restaurants/${rest.id}`}
       className="text-decoration-none text-dark fw-bold"
     >
       <div
@@ -34,7 +33,7 @@ const RestaurantCard = ({ rest }) => {
             <strong>Avg price:</strong> ${rest.avg_price}
           </p>
           <Link
-            to={`/restaurants/${rest.id}`}
+            to={`/back_office/restaurants/${rest.id}`}
           >
             <p className="edit-button">
               <strong> EDIT </strong>

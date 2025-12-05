@@ -138,7 +138,7 @@ def search_results():
 
 # Retrieve restaurant details and menu
 @app.route('/api/restaurants/<rest_id>', methods=['GET'])
-@app.route('/back_office/<rest_id>', methods=['GET'])
+@app.route('/back_office/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
     ok_r, rest = database.load_restaurant_by_id(rest_id)
     if not ok_r:
