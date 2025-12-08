@@ -27,7 +27,7 @@ const MapPage = () => {
   return (
     <APIProvider apiKey="AIzaSyAKMIFCaA4lMg03q7j_AevC-sHcJCv7RwA">
       <Map
-        mapId={"TBMAP"}
+        mapId={"c9b7d8a75795353dfa3de5fa"}
         defaultCenter={MAP_CENTER}
         defaultZoom={15}
         style={{ width: "100%", height: "600px" }}
