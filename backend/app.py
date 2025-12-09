@@ -298,6 +298,20 @@ def remove_group_member(group_id, member_netid):
         return flask.jsonify({"error": updated}), 400
     return flask.jsonify({"group": updated}), 200
 
+@app.route('/api/groups/<group_id>', methods=['DELETE'])
+def delete_group_api(group_id):
+    """Delete a group. Any member can delete; prevents 404 for non-members with proper auth check."""
+    username = _require_auth()
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Only group members can delete"}), 403
+    ok2, msg = database.delete_group(group_id)
+    if not ok2:
+        return flask.jsonify({"error": msg}), 400
+    return flask.jsonify({"message": "Group deleted"}), 200
+
 @app.route('/api/groups/<group_id>/restaurant', methods=['PUT'])
 def set_group_restaurant(group_id):
     username = _require_auth()
@@ -316,6 +330,43 @@ def set_group_restaurant(group_id):
     if not ok:
         return flask.jsonify({"error": updated}), 400
     ok, full = database.get_group_with_members(group_id)
+    return flask.jsonify({"group": full}), 200
+
+@app.route('/api/groups/<group_id>/meal', methods=['PUT'])
+def set_group_meal(group_id):
+    """Set or clear the group's scheduled meal datetime. Any group member can update it.
+    Body: {"scheduled_meal_at": "YYYY-MM-DDTHH:MM"} or null to clear.
+    """
+    username = _require_auth()
+    payload = flask.request.get_json(silent=True) or {}
+    # scheduled_meal_at as ISO local string (datetime-local) or None
+    scheduled = payload.get('scheduled_meal_at', None)
+    # Verify membership
+    ok, group = database.get_group_with_members(group_id)
+    if not ok:
+        return flask.jsonify({"error": group}), 404
+    if username not in [m['netid'] for m in group['members']]:
+        return flask.jsonify({"error": "Only group members can update meal time"}), 403
+    # Normalize naive local input to UTC to avoid timezone drift
+    if isinstance(scheduled, str) and scheduled:
+        try:
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            # Input like '2025-12-25T18:30' (no seconds, no tz): treat as America/New_York local time
+            dt_local = datetime.fromisoformat(scheduled)
+            dt_local = dt_local.replace(tzinfo=ZoneInfo('America/New_York'))
+            dt_utc = dt_local.astimezone(ZoneInfo('UTC'))
+            scheduled = dt_utc.isoformat()
+        except Exception:
+            # If parsing fails, leave as-is and let DB handle
+            pass
+    ok2, updated = database.update_group_meal_time(group_id, scheduled)
+    if not ok2:
+        return flask.jsonify({"error": updated}), 400
+    # Return full group details to refresh client state
+    ok3, full = database.get_group_with_members(group_id)
+    if not ok3:
+        return flask.jsonify({"error": full}), 400
     return flask.jsonify({"group": full}), 200
 
 @app.route('/api/users/search', methods=['GET'])

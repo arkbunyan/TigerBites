@@ -21,6 +21,8 @@ const GroupsPage = () => {
   const [debounceId, setDebounceId] = useState(null);
   const [groupPreferences, setGroupPreferences] = useState(null);
   const [loadingPreferences, setLoadingPreferences] = useState(false);
+  const [mealDateTime, setMealDateTime] = useState("");
+  const [scheduleMessage, setScheduleMessage] = useState("");
 
   // Fetch user groups
   const loadGroups = async () => {
@@ -64,6 +66,25 @@ const GroupsPage = () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setGroupDetails(data.group);
+      // If API starts returning a scheduled_meal_at field, initialize local state
+      if (data.group && data.group.scheduled_meal_at) {
+        try {
+          const iso = data.group.scheduled_meal_at; // expected ISO string
+          // Convert to value usable by input type="datetime-local" (remove seconds and Z if present)
+          const d = new Date(iso);
+          const pad = (n) => String(n).padStart(2, '0');
+          const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          setMealDateTime(local);
+        } catch {}
+      } else {
+        // No scheduled time set: default to current local date/time
+        try {
+          const now = new Date();
+          const pad = (n) => String(n).padStart(2, '0');
+          const localNow = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+          setMealDateTime(localNow);
+        } catch {}
+      }
       // Load preferences
       loadGroupPreferences(groupId);
     } catch (e) {
@@ -71,6 +92,41 @@ const GroupsPage = () => {
       setGroupDetails(null);
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  // Save meal schedule
+  const handleSaveMealSchedule = async () => {
+    if (!selectedGroupId || !mealDateTime) {
+      setScheduleMessage("Please select a date and time.");
+      setTimeout(() => setScheduleMessage(""), 2500);
+      return;
+    }
+    // Normalize to UTC ISO string before sending to backend
+    let payloadValue = mealDateTime;
+    try {
+      const d = new Date(mealDateTime);
+      if (!isNaN(d.getTime())) {
+        payloadValue = d.toISOString();
+      }
+    } catch {}
+    try {
+      const res = await fetch(`/api/groups/${selectedGroupId}/meal`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduled_meal_at: payloadValue })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setScheduleMessage(data.error || 'Failed to save meal time');
+      } else {
+        setScheduleMessage('Meal time saved.');
+        await loadGroupDetails(selectedGroupId);
+      }
+    } catch (e) {
+      setScheduleMessage('Network error while saving meal time');
+    } finally {
+      setTimeout(() => setScheduleMessage(''), 2500);
     }
   };
 
@@ -300,14 +356,34 @@ const GroupsPage = () => {
                   style={{ cursor: 'pointer'}}
                   onClick={() => loadGroupDetails(g.id)}>
                 <span >{g.group_name}</span>
-                {g.selected_restaurant_id && (
-                  <small className="badge bg-light text-dark">
-                    {(() => {
-                      const r = restaurants.find(r => String(r.id) === String(g.selected_restaurant_id));
-                      return r ? r.name : 'Restaurant';
-                    })()}
-                  </small>
-                )}
+                <div className="d-flex align-items-center gap-2">
+                  {g.selected_restaurant_id && (
+                    <small className="badge bg-light text-dark">
+                      {(() => {
+                        const r = restaurants.find(r => String(r.id) === String(g.selected_restaurant_id));
+                        return r ? r.name : 'Restaurant';
+                      })()}
+                    </small>
+                  )}
+                  {g.scheduled_meal_at && (
+                    <small className="text-muted">
+                      {(() => {
+                        try {
+                          const d = new Date(g.scheduled_meal_at);
+                          return d.toLocaleString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          });
+                        } catch {
+                          return g.scheduled_meal_at;
+                        }
+                      })()}
+                    </small>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
@@ -357,36 +433,7 @@ const GroupsPage = () => {
                 )}
                 {loadingPreferences && <p className="text-muted fst-italic">Loading preferences...</p>}
 
-                {/* Recommended matches section: show compact restaurant cards matching recommended cuisines */}
-                {groupPreferences && restaurants && restaurants.length > 0 && (
-                  (() => {
-                    const recs = (groupPreferences.recommended_cuisines || []).map(c => c.trim().toLowerCase());
-                    const matches = restaurants.filter(r => {
-                      const cat = (r.category || '').trim().toLowerCase();
-                      return cat && recs.includes(cat);
-                    });
-                    if (matches.length === 0) {
-                      return (
-                        <div className="mb-4">
-                          <h6 className="mb-2">Recommended Matches</h6>
-                          <p className="text-muted fst-italic">No matching restaurants for recommended cuisines yet.</p>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="mb-4">
-                        <h6 className="mb-2">Recommended Matches</h6>
-                        <div className="row g-3">
-                          {matches.map(rest => (
-                            <div key={rest.id} className="col-md-4 col-sm-6">
-                              <RestaurantCard rest={rest} compact={true} />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
+                
 
                 <div className="mb-3">
                   <label className="form-label">Selected Restaurant</label>
@@ -405,6 +452,32 @@ const GroupsPage = () => {
                       Clear Selection
                     </button>
                   )}
+                </div>
+
+                {/* Group meal scheduling */}
+                <div className="mb-3 p-3 border rounded" style={{ backgroundColor: '#f8f9fa' }}>
+                  <label className="form-label fw-semibold">Schedule a Meal</label>
+                  <div className="d-flex flex-wrap align-items-center gap-2">
+                    <input
+                      type="datetime-local"
+                      className="form-control"
+                      style={{ maxWidth: 280 }}
+                      value={mealDateTime}
+                      onChange={(e) => setMealDateTime(e.target.value)}
+                      disabled={false}
+                    />
+                    <button
+                      className="btn btn-sm"
+                      style={{ backgroundColor: '#FF5F0D', color: 'white' }}
+                      onClick={handleSaveMealSchedule}
+                      disabled={false}
+                    >
+                      Save
+                    </button>
+                    {scheduleMessage && (
+                      <small className="text-muted ms-2">{scheduleMessage}</small>
+                    )}
+                  </div>
                 </div>
 
                 <h5>Members</h5>
@@ -448,6 +521,64 @@ const GroupsPage = () => {
                     </ul>
                   )}
                 </div>
+
+                {/* Danger zone: delete group */}
+                <div className="mb-4">
+                  <button
+                    className="btn btn-outline-danger"
+                    onClick={async () => {
+                      if (!selectedGroupId) return;
+                      const confirmed = window.confirm('Delete this group? This cannot be undone.');
+                      if (!confirmed) return;
+                      try {
+                        const res = await fetch(`/api/groups/${selectedGroupId}`, { method: 'DELETE' });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Failed to delete group');
+                        setActionMessage('Group deleted');
+                        setGroupDetails(null);
+                        setSelectedGroupId(null);
+                        await loadGroups();
+                      } catch (e) {
+                        setActionMessage(e.message);
+                      }
+                    }}
+                  >
+                    Delete Group
+                  </button>
+                </div>
+
+                {/* Recommended matches section moved to bottom: show compact restaurant cards matching recommended cuisines */}
+                {groupPreferences && restaurants && restaurants.length > 0 && (
+                  (() => {
+                    const recs = (groupPreferences.recommended_cuisines || []).map(c => c.trim().toLowerCase());
+                    const matches = restaurants.filter(r => {
+                      const cat = (r.category || '').trim().toLowerCase();
+                      return cat && recs.includes(cat);
+                    });
+                    if (matches.length === 0) {
+                      return (
+                        <div className="mb-4">
+                          <h6 className="mb-2">Recommended Matches</h6>
+                          <p className="text-muted fst-italic">No matching restaurants for recommended cuisines yet.</p>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="mb-4">
+                        <h6 className="mb-2">Recommended Matches</h6>
+                        <div className="row g-3">
+                          {matches.map(rest => (
+                            <div key={rest.id} className="col-md-4 col-sm-6">
+                              <RestaurantCard rest={rest} compact={true} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
+
+                
               </div>
             </div>
           )}

@@ -642,7 +642,7 @@ def create_group(group_name, creator_netid, selected_restaurant_id=None):
                     """
                     INSERT INTO groups (group_name, creator_netid, selected_restaurant_id)
                     VALUES (%s, %s, %s)
-                    RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at
+                    RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at, scheduled_meal_at
                     """,
                     (group_name, creator_netid, selected_restaurant_id)
                 )
@@ -660,6 +660,8 @@ def create_group(group_name, creator_netid, selected_restaurant_id=None):
                 data = dict(g_row)
                 data['id'] = str(data['id'])
                 data['created_at'] = data['created_at'].isoformat()
+                if data.get('scheduled_meal_at'):
+                    data['scheduled_meal_at'] = data['scheduled_meal_at'].isoformat()
                 return [True, data]
         finally:
             _put_conn(conn)
@@ -713,6 +715,30 @@ def remove_member_from_group(group_id, member_netid):
     except Exception as ex:
         return _err_response(ex)
 
+def delete_group(group_id):
+    """Delete a group and its memberships. Also clears any dependent references like selected_restaurant_id.
+    Returns [True, 'deleted'] or [False, error].
+    """
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor() as cursor:
+                # Ensure group exists
+                cursor.execute("SELECT 1 FROM groups WHERE id = %s", (group_id,))
+                exists = cursor.fetchone()
+                if not exists:
+                    return [False, 'Group not found']
+                # Delete memberships first due to FK constraints
+                cursor.execute("DELETE FROM group_members WHERE group_id = %s", (group_id,))
+                # Delete the group row
+                cursor.execute("DELETE FROM groups WHERE id = %s", (group_id,))
+                conn.commit()
+                return [True, 'deleted']
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+
 def update_group_selected_restaurant(group_id, restaurant_id):
     """Update the selected restaurant for a group with option to clear the selection."""
     try:
@@ -726,7 +752,7 @@ def update_group_selected_restaurant(group_id, restaurant_id):
                         return [False, 'Restaurant not found']
                 
                 cursor.execute(
-                    "UPDATE groups SET selected_restaurant_id = %s WHERE id = %s RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at",
+                    "UPDATE groups SET selected_restaurant_id = %s WHERE id = %s RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at, scheduled_meal_at",
                     (restaurant_id, group_id)
                 )
                 row = cursor.fetchone()
@@ -736,6 +762,8 @@ def update_group_selected_restaurant(group_id, restaurant_id):
                 data = dict(row)
                 data['id'] = str(data['id'])
                 data['created_at'] = data['created_at'].isoformat()
+                if data.get('scheduled_meal_at'):
+                    data['scheduled_meal_at'] = data['scheduled_meal_at'].isoformat()
                 return [True, data]
         finally:
             _put_conn(conn)
@@ -749,7 +777,7 @@ def get_group_with_members(group_id):
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("""
-                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at,
+                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at, g.scheduled_meal_at,
                            r.name AS restaurant_name
                     FROM groups g
                     LEFT JOIN restaurants r ON g.selected_restaurant_id = r.id
@@ -774,7 +802,35 @@ def get_group_with_members(group_id):
                 data = dict(g_row)
                 data['id'] = str(data['id'])
                 data['created_at'] = data['created_at'].isoformat()
+                if data.get('scheduled_meal_at'):
+                    data['scheduled_meal_at'] = data['scheduled_meal_at'].isoformat()
                 data['members'] = members
+                return [True, data]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_group_meal_time(group_id, scheduled_meal_at):
+    """Update the group's scheduled_meal_at timestamp. Accepts ISO 8601 string or None to clear."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # Allow None to clear the field
+                cursor.execute(
+                    "UPDATE groups SET scheduled_meal_at = %s WHERE id = %s RETURNING id, group_name, creator_netid, selected_restaurant_id, created_at, scheduled_meal_at",
+                    (scheduled_meal_at, group_id)
+                )
+                row = cursor.fetchone()
+                conn.commit()
+                if not row:
+                    return [False, 'Group not found']
+                data = dict(row)
+                data['id'] = str(data['id'])
+                data['created_at'] = data['created_at'].isoformat()
+                if data.get('scheduled_meal_at'):
+                    data['scheduled_meal_at'] = data['scheduled_meal_at'].isoformat()
                 return [True, data]
         finally:
             _put_conn(conn)
@@ -788,7 +844,7 @@ def list_groups_for_user(netid):
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 cursor.execute("""
-                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at
+                    SELECT g.id, g.group_name, g.creator_netid, g.selected_restaurant_id, g.created_at, g.scheduled_meal_at
                     FROM group_members gm
                     JOIN groups g ON gm.group_id = g.id
                     WHERE gm.user_netid = %s
@@ -800,6 +856,8 @@ def list_groups_for_user(netid):
                     d = dict(r)
                     d['id'] = str(d['id'])
                     d['created_at'] = d['created_at'].isoformat()
+                    if d.get('scheduled_meal_at'):
+                        d['scheduled_meal_at'] = d['scheduled_meal_at'].isoformat()
                     groups.append(d)
                 return [True, groups]
         finally:

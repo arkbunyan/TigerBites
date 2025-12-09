@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build frontend dev bundle",
+			"type": "shell",
+			"command": "npm run builddev",
+			"group": "build"
+		},
+		{
+			"label": "Build frontend dev bundle",
+			"type": "shell",
+			"command": "npm run builddev",
+			"group": "build"
+		}
+	]
+}
