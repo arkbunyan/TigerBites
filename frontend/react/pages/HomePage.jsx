@@ -1,46 +1,60 @@
-import React from "react";
+import React, { useState } from "react";
+import "./HomePage.css";
 
 const HomePage = () => {
-  return (
-    <div>
-      <div className="card vh-100 vw-100 d-flex justify-content-center align-items-center position-relative">
-        <img
-          src="../../static/tiger.ico"
-          alt="Tiger logo"
-          style={{
-            height: "100%",
-            width: "100%",
-            objectFit: "contain",
-            backgroundColor: "#FF5F0D",
-          }}
-        />
-        <div className="card-img-overlay bg-dark bg-opacity-50">
-          <h1 className="text-white text-center fw-bold position-relative">
-            Welcome to TigerBites
-          </h1>
-          <p className="text-white text-center mt-4 position-relative h5">
-            “Where do you want to eat?” — A question that everyone has been
-            asked before. TigerBites provides the
-            quickest and easiest way for members of the Princeton community to
-            find the perfect restaurant to satisfy their cravings–fast. Equipped
-            with menu listings, reviews, and detailed location information,
-            you can find the best restaurant for your current craving.
-            TigerBites is sure to find what’s right for you.
-          </p>
+  const [hover, setHover] = useState(false);
 
-          <p className="text-white text-center mt-4 position-relative h3">
-            Start by navigating to your profile and updating your preferences
-            and dietary restrictions. Then, the next time you and a group of
-            friends are deciding where to eat, create a group and check out the
-            recommended options! To see where your chosen restaurant is, head
-            over to the map page. Happy eating!
-          </p>
-          <a
-            href="/discover"
-            className="link-underline-light d-flex justify-content-center mt-4 position-relative"
-          >
-            <button type="button" class="btn btn-light">
-              Click here to Login!
+  const buttonBase = {
+    borderRadius: 999,
+    padding: "12px 36px",
+    fontWeight: 800,
+    fontSize: 16,
+    border: "none",
+    cursor: "pointer",
+    transition: "transform 160ms ease, box-shadow 160ms ease",
+  };
+
+  const buttonStyle = {
+    ...buttonBase,
+    background: "#FFFFFF",
+    color: "#D35400",
+    boxShadow: hover
+      ? "0 12px 30px rgba(211,84,0,0.18)"
+      : "0 8px 20px rgba(0,0,0,0.12)",
+    transform: hover ? "translateY(-4px)" : "translateY(0)",
+  };
+
+  return (
+    <div className="tb-landing">
+      <div className="tb-container">
+        <div className="tb-logo-wrap">
+          <img
+            src="../../static/tiger.ico"
+            alt="Tiger logo"
+            className="tb-logo"
+          />
+        </div>
+
+        <div className="tb-title">TigerBites</div>
+
+        <p className="tb-lead">
+          Discover the perfect place to eat at Princeton. Find restaurants, explore menus, read reviews, and connect with friends.
+        </p>
+
+        <p className="tb-sub">
+          Update your preferences in your profile, create groups with friends, get personalized recommendations, and explore restaurants on our map. Find what satisfies your cravings instantly.
+        </p>
+
+        <div className="tb-cta-wrap">
+          <a href="/discover" style={{ textDecoration: "none" }}>
+            <button
+              className="tb-cta"
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
+              aria-label="Get started with TigerBites"
+            >
+              <span>Get Started</span>
+              <span className="tb-cta-arrow">→</span>
             </button>
           </a>
         </div>

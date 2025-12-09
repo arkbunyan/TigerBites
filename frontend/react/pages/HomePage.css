@@ -1,0 +1,96 @@
+/* Styles for the landing page to match the provided design */
+.tb-landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: linear-gradient(180deg, #ff8f59 0%, #ff8a4a 40%, #ff7a3a 100%);
+  background-repeat: no-repeat;
+}
+
+.tb-container {
+  text-align: center;
+  max-width: 920px;
+  width: 100%;
+  padding: 8px 20px 40px 20px;
+}
+
+.tb-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.tb-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 6px;
+  padding: 0;
+  background: transparent;
+  /* subtle drop shadow so the icon sits above the gradient */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+}
+
+.tb-title {
+  font-size: 56px;
+  font-weight: 800;
+  color: #fffefc;
+  margin: 8px 0 6px 0;
+  text-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.tb-lead {
+  font-size: 18px;
+  color: rgba(255,255,255,0.95);
+  margin: 12px 0 18px 0;
+  line-height: 1.6;
+}
+
+.tb-sub {
+  font-size: 14.5px;
+  color: rgba(255,255,255,0.9);
+  margin: 16px 0 22px 0;
+  line-height: 1.7;
+}
+
+.tb-cta-wrap {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+.tb-cta {
+  background: #ffffff;
+  color: #ff7a2d;
+  border-radius: 999px;
+  padding: 14px 38px;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  border: none;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tb-cta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.18);
+}
+
+.tb-cta:active {
+  transform: translateY(-1px);
+}
+
+.tb-cta-arrow {
+  margin-left: 10px;
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .tb-title { font-size: 40px; }
+  .tb-logo { width: 76px; height: 76px; }
+  .tb-lead { font-size: 16px; }
+}

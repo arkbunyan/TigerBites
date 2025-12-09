@@ -12,6 +12,9 @@ const HeaderNav = () => {
   const isBackOffice =
     location.pathname.startsWith("/back_office")
 
+  // Hide the global header on the homepage for a clean landing experience
+  const hideOnHome = location.pathname === "/";
+
 
   useEffect(() => {
     fetch("/api/profile")
@@ -42,6 +45,10 @@ const HeaderNav = () => {
     }
     window.location.href = "/logout_app";
   };
+
+  if (hideOnHome) {
+    return <TutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} />;
+  }
 
   return (
     <>

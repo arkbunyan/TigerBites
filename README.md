@@ -15,10 +15,10 @@ TigerBites is a web application designed to connect the Princeton University com
 
 To host website run:
 
-- pip install -r requirements.txt
-- npm install
-- npm run builddev
-- python -m backend.runserver [port #]
+pip install -r requirements.txt
+npm install
+npm run builddev
+python -m backend.runserver [port #]
 
 ---
 
