@@ -33,9 +33,20 @@ const RestaurantCard = ({ rest, compact = false }) => {
               <p className="card-text mb-1">
                 <small className="text-secondary">{rest.hours}</small>
               </p>
-              <p className="card-text">
+              <p className="card-text mb-2">
                 <strong>Avg price:</strong> ${rest.avg_price}
               </p>
+              {rest.website_url && (
+                <a
+                  href={rest.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-sm btn-outline-primary"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  Website
+                </a>
+              )}
             </>
           )}
         </div>

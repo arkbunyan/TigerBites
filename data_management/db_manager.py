@@ -52,7 +52,7 @@ def create_restaurants_table():
         conn.commit()
 
 def migrate_restaurant_new_columns():
-    """Add picture (TEXT) and yelp_rating (DOUBLE PRECISION) if missing."""
+    """Add picture (TEXT), yelp_rating (DOUBLE PRECISION), and website_url (TEXT) if missing."""
     with get_conn() as conn, conn.cursor() as cur:
         cur.execute("""
             ALTER TABLE public.restaurants
@@ -61,6 +61,10 @@ def migrate_restaurant_new_columns():
         cur.execute("""
             ALTER TABLE public.restaurants
             ADD COLUMN IF NOT EXISTS yelp_rating DOUBLE PRECISION;
+        """)
+        cur.execute("""
+            ALTER TABLE public.restaurants
+            ADD COLUMN IF NOT EXISTS website_url TEXT;
         """)
         conn.commit()
 
@@ -155,10 +159,10 @@ def insert_restaurant(restaurant_data, menu_data=None):
 
     upsert = """
         INSERT INTO public.restaurants
-            (name, description, location, hours, category, avg_price, latitude, longitude, picture, yelp_rating)
+            (name, description, location, hours, category, avg_price, latitude, longitude, picture, yelp_rating, website_url)
         VALUES
             (%(name)s, %(description)s, %(location)s, %(hours)s, %(category)s,
-             %(avg_price)s, %(latitude)s, %(longitude)s, %(picture)s, %(yelp_rating)s)
+             %(avg_price)s, %(latitude)s, %(longitude)s, %(picture)s, %(yelp_rating)s, %(website_url)s)
         ON CONFLICT (name, location) DO UPDATE SET
             description = EXCLUDED.description,
             hours       = EXCLUDED.hours,
@@ -167,7 +171,8 @@ def insert_restaurant(restaurant_data, menu_data=None):
             latitude    = EXCLUDED.latitude,
             longitude   = EXCLUDED.longitude,
             picture     = EXCLUDED.picture,
-            yelp_rating = EXCLUDED.yelp_rating
+            yelp_rating = EXCLUDED.yelp_rating,
+            website_url = EXCLUDED.website_url
         RETURNING id;
     """
     with get_conn() as conn, conn.cursor() as cur:
@@ -212,6 +217,7 @@ def bulk_insert_restaurants(rows):
         "longitude",
         "picture",
         "yelp_rating",
+        "website_url",
     ]
     sql = f"""
         INSERT INTO public.restaurants ({",".join(cols)})
@@ -224,7 +230,8 @@ def bulk_insert_restaurants(rows):
             latitude    = EXCLUDED.latitude,
             longitude   = EXCLUDED.longitude,
             picture     = EXCLUDED.picture,
-            yelp_rating = EXCLUDED.yelp_rating;
+            yelp_rating = EXCLUDED.yelp_rating,
+            website_url = EXCLUDED.website_url;
     """
     values = [tuple(r.get(c) for c in cols) for r in rows]
 

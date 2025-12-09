@@ -50,6 +50,18 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
               ❗Yelp rating: {restaurant.yelp_rating} / 5
             </p>
           )}
+          {restaurant.website_url && (
+            <p className="mt-3">
+              <a
+                href={restaurant.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary btn-sm"
+              >
+                Visit Website
+              </a>
+            </p>
+          )}
         </div>
       </div>
 

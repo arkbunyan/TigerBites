@@ -50,6 +50,7 @@ def load_csv(csv_path: Path):
                 "longitude": to_float(raw.get("longitude")),
                 "picture": (raw.get("picture") or "").strip(),
                 "yelp_rating": to_float(raw.get("yelp_rating")),
+                "website_url": (raw.get("website_url") or "").strip(),
             }
             rows.append(row)
     return rows

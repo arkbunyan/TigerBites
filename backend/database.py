@@ -62,7 +62,8 @@ def load_all_restaurants():
                         'latitude': row.get('latitude'),
                         'longitude': row.get('longitude'),
                         'picture': row.get('picture'),
-                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
+                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None,
+                        'website_url': row.get('website_url')
                     }
                     response.append(entry)
                 return [True, response]
@@ -107,7 +108,8 @@ def restaurant_search(params):
                         'latitude': row.get('latitude'),
                         'longitude': row.get('longitude'),
                         'picture': row.get('picture'),
-                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
+                        'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None,
+                        'website_url': row.get('website_url')
                     }
                     response.append(entry)
                 return [True, response]
@@ -140,7 +142,8 @@ def load_restaurant_by_id(rest_id):
                     'latitude': row.get('latitude'),
                     'longitude': row.get('longitude'),
                     'picture': row.get('picture'),
-                    'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None
+                    'yelp_rating': float(row.get('yelp_rating')) if row.get('yelp_rating') is not None else None,
+                    'website_url': row.get('website_url')
                 }
                 return [True, data]
         finally:
