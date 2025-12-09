@@ -138,7 +138,10 @@ const GroupsPage = () => {
       if (!res.ok) throw new Error(data.error || 'Failed to add member');
       setActionMessage('Member added');
       setMemberNetid('');
-      setGroupDetails(data.group);
+      // Refresh details and preferences to reflect changes without reload
+      await loadGroupDetails(selectedGroupId);
+      await loadGroupPreferences(selectedGroupId);
+      await loadGroups();
     } catch (e) {
       setActionMessage(e.message);
     }
@@ -202,7 +205,10 @@ const GroupsPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to remove member');
       setActionMessage('Member removed');
-      setGroupDetails(data.group);
+      // Refresh details and preferences to reflect changes
+      await loadGroupDetails(selectedGroupId);
+      await loadGroupPreferences(selectedGroupId);
+      await loadGroups();
     } catch (e) {
       setActionMessage(e.message);
     }
@@ -220,7 +226,9 @@ const GroupsPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to set restaurant');
       setActionMessage('Restaurant selected');
-      setGroupDetails(data.group);
+      await loadGroupDetails(selectedGroupId);
+      await loadGroupPreferences(selectedGroupId);
+      await loadGroups();
     } catch (e) {
       setActionMessage(e.message);
     }
@@ -236,7 +244,9 @@ const GroupsPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to clear restaurant');
       setActionMessage('Restaurant selection cleared');
-      setGroupDetails(data.group);
+      await loadGroupDetails(selectedGroupId);
+      await loadGroupPreferences(selectedGroupId);
+      await loadGroups();
     } catch (e) {
       setActionMessage(e.message);
     }
