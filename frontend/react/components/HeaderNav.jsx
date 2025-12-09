@@ -28,13 +28,16 @@ const HeaderNav = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Show tutorial for first-time users
+  // Show tutorial for first-time users only after login
   useEffect(() => {
     try {
       const seen = localStorage.getItem("tb_seen_tutorial");
-      if (!seen) setShowTutorial(true);
+      // Only show if not seen AND user is authenticated
+      if (!seen && user && (user.username || user.firstname)) {
+        setShowTutorial(true);
+      }
     } catch {}
-  }, []);
+  }, [user]);
 
   const handleLogout = async (e) => {
     e.preventDefault();
