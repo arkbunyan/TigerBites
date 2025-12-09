@@ -50,7 +50,6 @@ atexit.register(_dispose_pools)
 # Test React
 @app.route('/', methods=['GET'])
 def index():
-    auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
 # Home Page

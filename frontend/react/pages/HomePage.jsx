@@ -20,17 +20,11 @@ const HomePage = () => {
           </h1>
           <p className="text-white text-center mt-4 position-relative h5">
             “Where do you want to eat?” — A question that everyone has been
-            asked before, a question that is typically followed by group banter
-            and disagreement, often leading to the group failing to find a
-            restaurant that everyone in the group will be satisfied with. What
-            was supposed to start as a fun meal out becomes a daunting and
-            time-consuming process of elimination. TigerBites provides the
+            asked before. TigerBites provides the
             quickest and easiest way for members of the Princeton community to
             find the perfect restaurant to satisfy their cravings–fast. Equipped
             with menu listings, reviews, and detailed location information,
-            users can find the best restaurant for their current craving.
-            Whether it’s busy students or locals who need a quick but satiating
-            bite, or a big group looking for the perfect sit-down experience,
+            you can find the best restaurant for your current craving.
             TigerBites is sure to find what’s right for you.
           </p>
 
@@ -46,7 +40,7 @@ const HomePage = () => {
             className="link-underline-light d-flex justify-content-center mt-4 position-relative"
           >
             <button type="button" class="btn btn-light">
-              Click here to search for a restaurant!
+              Click here to Login!
             </button>
           </a>
         </div>
