@@ -59,12 +59,24 @@ def home():
     restaurants = database.load_all_restaurants()
     firstname = auth.get_firstname()
 
+    username = auth.get_username()
+    user_prefs = {}
+    try:
+        ok_u, user = database.get_user_by_username(username)
+        if ok_u and isinstance(user, dict):
+            # Normalize keys if present (DB uses favorite_cuisine as array)
+            favs = user.get('favorite_cuisine') or user.get('favoriteCuisine') or user.get('favorite_cuisines') or []
+            user_prefs = { 'favorite_cuisines': favs or [] }
+    except Exception:
+        user_prefs = {}
+
     if restaurants[0] is False:
         return flask.jsonify({"error": restaurants[1]}), 400
 
     return flask.jsonify({
         "firstname": firstname,
-        "restaurants": restaurants[1]
+        "restaurants": restaurants[1],
+        "preferences": user_prefs
     })
 
 # Load restaurant data for map
