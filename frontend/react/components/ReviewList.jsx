@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
   const handleDelete = async (reviewId) => {
@@ -76,9 +77,12 @@ const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
               </div>
             </div>
             {review.comment && <p className="card-text">{review.comment}</p>}
-            {review.restaurant_name && (
+            {review.restaurant_name && review.restaurant_id && (
               <small className="text-muted">
-                Restaurant: {review.restaurant_name}
+                Restaurant: {" "}
+                <Link to={`/restaurants/${review.restaurant_id}`} className="text-decoration-none">
+                  {review.restaurant_name}
+                </Link>
               </small>
             )}
           </div>

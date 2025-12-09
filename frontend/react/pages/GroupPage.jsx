@@ -191,6 +191,10 @@ const GroupsPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to add');
       setGroupDetails(data.group);
+        // Refresh details and preferences to reflect changes
+      await loadGroupDetails(selectedGroupId);
+      await loadGroupPreferences(selectedGroupId);
+      await loadGroups();
       setActionMessage(`Added ${user.netid}`);
       setSearchQuery("");
       setSearchResults([]);
