@@ -1,8 +1,6 @@
 Item,Price,Description
 "Pizza (Small 12"")",10.6,Thin crust; 8 slices; plain base; choose toppings
-"Pizza (Medium 14"")",,Thin crust; 8 slices; plain base; choose toppings
 "Pizza (Large 16"")",21.5,Thin crust; 12 slices; plain base; choose toppings
-"Gluten Free Pizza (10"")",,Thin crust; 8 slices; gluten-free crust
 Meatball Sandwich,6.5,Cheese available
 Sausage Sandwich,6.5,Cheese available
 Steak Sandwich,6.5,Cheese or fried onions/mushrooms/peppers available
@@ -12,7 +10,6 @@ Italian Hoagie,6.5,
 Meatballs (Side),4,
 Sausage (Side),4,
 House Salad (Individual),4.5,"Choice of dressing: House Italian/Vinaigrette, French, Russian, Blue Cheese"
-"House Salad (Family Size, 4–5 people)",,
 Spaghetti (Small),9,Comes with house salad and bread
 Spaghetti (Small with Meat),11,With meatball or sausage
 Spaghetti (Regular),11,Comes with house salad and bread
@@ -21,16 +18,5 @@ Penne (Small),9,Comes with house salad and bread
 Penne (Small with Meat),11,With meatball or sausage
 Penne (Regular),11,Comes with house salad and bread
 Penne (Regular with Meat),13,With meatball or sausage
-Gluten Free Spaghetti,,
-Gluten Free Penne,,
-Pasta Fagioli (Soup),,Seasonal (Oct 1 – Apr 30)
-Split Pea (Soup),,Seasonal (Oct 1 – Apr 30)
-Lentils (Soup),,Seasonal (Oct 1 – Apr 30)
-Minestrone (Soup),,Seasonal (Oct 1 – Apr 30)
-Vegetable (Soup),,Seasonal (Oct 1 – Apr 30)
-Draft Beer,,Blue Moon; Goose Island (IPA); Kona; Miller Lite; Modelo; Peroni
-Bottled Beer,,Miller Lite; Coors Light; Amstel Light; Rolling Rock; Yuengling; Heineken; Modelo; Stella; Peroni; Samuel Adams; Michelob Ultra; O’Douls (NA); Red Bridge (GF)
-Red Wine,,Chianti; Cabernet; Merlot; Malbec (Finca)
-White Wine,,Pinot Grigio; Chardonnay; Sauvignon Blanc
-Rosé,,White Zinfandel
-High Noon,,Pineapple and Peach
+Gluten Free Spaghetti,11,
+Gluten Free Penne,11,
