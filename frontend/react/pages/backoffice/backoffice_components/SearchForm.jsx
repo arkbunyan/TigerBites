@@ -4,6 +4,9 @@ const SearchForm = ({ onSearch }) => {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
+  const isBackOffice =
+    location.pathname.startsWith("/back_office")
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSearch({ name, category });
@@ -47,7 +50,7 @@ const SearchForm = ({ onSearch }) => {
           <button
             type="submit"
             className="btn btn-dark w-100 fw-semibold"
-            style={{ marginTop: "30px", backgroundColor: "#FF5F0D" }}
+            style={{ marginTop: "30px", backgroundColor: isBackOffice ? "#6189FF" : "#FF5F0D" }}
           >
             Search
           </button>

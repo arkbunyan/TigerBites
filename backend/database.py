@@ -285,7 +285,7 @@ def get_user_by_username(username):
         conn = _get_conn()
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-                sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions FROM public.users WHERE netid = %s"
+                sql = "SELECT id, netid, email, firstname, fullname, favorite_cuisine, allergies, dietary_restrictions, admin_status FROM public.users WHERE netid = %s"
                 cursor.execute(sql, (username,))
                 row = cursor.fetchone()
                 

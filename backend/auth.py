@@ -45,7 +45,8 @@ def api_profile():
             "email": get_email(),
             "favorite_cuisine": [],
             "allergies": [],
-            "dietary_restrictions": []
+            "dietary_restrictions": [],
+            "admin_status": False
         })
     # Return data from database (favorite_cuisine, allergies, and dietary_restrictions are arrays)
     return flask.jsonify({
@@ -56,7 +57,8 @@ def api_profile():
         "email": user_data.get('email', ''),
         "favorite_cuisine": user_data.get('favorite_cuisine', []),
         "allergies": user_data.get('allergies', []),
-        "dietary_restrictions": user_data.get('dietary_restrictions', [])
+        "dietary_restrictions": user_data.get('dietary_restrictions', []),
+        "admin_status": user_data.get('admin_status', False)
     })
 
 #-----------------------------------------------------------------------

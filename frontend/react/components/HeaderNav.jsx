@@ -72,13 +72,13 @@ const HeaderNav = () => {
         <div className="d-flex align-items-center">
           <ul className="navbar-nav d-flex flex-row align-items-center">
             <li className="nav-item mx-3">
-              <a className="nav-link text-dark fw-semibold" href="/discover">
+              <a className="nav-link text-dark fw-semibold" href={isBackOffice ?  "/back_office" :  "/discover" }>
                 Discover
               </a>
             </li>
             <li className="nav-item mx-3">
-              <a className="nav-link text-dark fw-semibold" href="/map">
-                Map
+              <a className="nav-link text-dark fw-semibold" href={isBackOffice ? "/back_office" : "/map" }>
+                {isBackOffice ? "Feedback" : "Map" }
               </a>
             </li>
             <li className="nav-item mx-3">
@@ -101,13 +101,21 @@ const HeaderNav = () => {
               </a>
             </li>
             <li className="nav-item mx-3">
-              <a
-                className="nav-link text-light fw-semibold"
-                href="#"
-                onClick={handleLogout}
-              >
-                Logout
-              </a>
+                <a
+                  className="nav-link text-light fw-semibold"
+                  href={
+                    isBackOffice
+                      ? (user?.admin_status ? "/discover" : "#")
+                      : "/back_office"
+                  }
+                  style={{
+                    pointerEvents: user?.admin_status ? "auto" : "none",
+                    opacity: user?.admin_status ? 1 : 0.5
+                  }}
+                >
+                  {isBackOffice ? "Exit Back Office" : "Admin"}
+                </a>
+
             </li>
           </ul>
 

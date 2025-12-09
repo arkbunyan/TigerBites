@@ -14,6 +14,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
 });
   const [editedMenu, setEditedMenu] = useState(menuItems || []);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   
   useEffect(() => {
   if (restaurant) setEditedRestaurant(restaurant);
@@ -40,8 +41,6 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving
-
-
     try {
       const response = await fetch(`/api/restaurants/${restaurant.id}/update`, {
         method: "PUT",
@@ -54,16 +53,18 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
         const data = await response.json();
         throw new Error(data.error || `HTTP ${response.status}`);
       }
-
+      // Reset Save Status after 3 seconds
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000);
       const data = await response.json();
     } catch (err) {
       console.error("Failed to update restaurant:", err);
-    } finally {
+    }
+    finally {
       setIsSaving(false)
     }
     };
 
-  
   return (
     <div className="container my-5">
       <h2>  
@@ -84,6 +85,15 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
           )}
 
+          {saveSuccess && (
+            <div className="alert alert-success text-center"
+              style={{
+
+              }}>
+              Changes saved successfully
+            </div>
+          )}
+
           <button
             className="btn btn-primary mt-2"
             onClick={handleSubmit}
@@ -95,7 +105,9 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
 
           <div className="card-body">
             {/*NAME */}
-            Name:
+            <strong>
+              Name:
+            </strong>
             <input
               className="form-control mb-2"
               value={editedRestaurant.name || ""}
@@ -105,7 +117,9 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*CATEGORY*/}
-            Category:
+            <strong>
+              Category
+            </strong>
             <input
               className="form-control mb-2"
               value={editedRestaurant.category || ""}
@@ -115,7 +129,9 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*HOURS*/}
-            Hours:
+            <strong>
+              Hours
+            </strong>
             <input
               className="form-control mb-2"
               value={editedRestaurant.hours || ""}
@@ -125,7 +141,9 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*LOCATION*/}
-            Location:
+            <strong>
+              Location
+            </strong>
             <input
               className="form-control mb-2"
               value={editedRestaurant.location || ""}
@@ -135,7 +153,9 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             />
 
             {/*PRICE*/}
-            Avg Price:
+            <strong>
+              Avg Price:
+            </strong>
             <input
               type="number"
               className="form-control mb-2"
@@ -195,7 +215,6 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
                             handleMenuChange(index, "name", e.target.value)
                           }
                         />
-
                         <input
                           type="number"
                           className="form-control mb-1"
@@ -204,8 +223,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
                             handleMenuChange(index, "price", e.target.value)
                           }
                         />
-
-                        <textarea
+                        <input
                           className="form-control"
                           value={item.description || ""}
                           onChange={(e) =>
