@@ -437,21 +437,32 @@ const GroupsPage = () => {
 
                 <div className="mb-3">
                   <label className="form-label">Selected Restaurant</label>
-                  <select className="form-select" disabled={!isLeader()} value={groupDetails.selected_restaurant_id || ''} onChange={handleSetRestaurant}>
-                    <option value="">-- Choose Restaurant --</option>
-                    {restaurants.map(r => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                  {groupDetails.selected_restaurant_id && (
-                    <button
-                      className="btn btn-outline-secondary btn-sm mt-2"
-                      onClick={handleClearRestaurant}
-                      disabled={!isLeader()}
-                    >
-                      Clear Selection
-                    </button>
-                  )}
+                  <div className="d-flex align-items-center gap-2">
+                    <select className="form-select" disabled={!isLeader()} value={groupDetails.selected_restaurant_id || ''} onChange={handleSetRestaurant} style={{ maxWidth: 320 }}>
+                      <option value="">-- Choose Restaurant --</option>
+                      {restaurants.map(r => (
+                        <option key={r.id} value={r.id}>{r.name}</option>
+                      ))}
+                    </select>
+                    {groupDetails.selected_restaurant_id && (
+                      <button
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={handleClearRestaurant}
+                        disabled={!isLeader()}
+                      >
+                        Clear Selection
+                      </button>
+                    )}
+                  </div>
+                  {/* If a restaurant is selected, show its compact card right below */}
+                  {groupDetails.selected_restaurant_id && (() => {
+                    const rest = restaurants.find(r => String(r.id) === String(groupDetails.selected_restaurant_id));
+                    return rest ? (
+                      <div className="mt-3" style={{ maxWidth: 380 }}>
+                        <RestaurantCard rest={rest} />
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
 
                 {/* Group meal scheduling */}
