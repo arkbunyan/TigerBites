@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import TutorialModal from "./TutorialModal.jsx";
 
 const HeaderNav = () => {
   const [user, setUser] = useState(null);
   const [datetime, setDatetime] = useState(new Date());
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const location = useLocation();
 
@@ -23,6 +25,14 @@ const HeaderNav = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // Show tutorial for first-time users
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem("tb_seen_tutorial");
+      if (!seen) setShowTutorial(true);
+    } catch {}
+  }, []);
+
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
@@ -34,6 +44,7 @@ const HeaderNav = () => {
   };
 
   return (
+    <>
     <header className="shadow-sm w-100" style={{
         backgroundColor: isBackOffice ? "#6189FF" : "#FF5F0D" }}>
       <div className="container-fluid py-3 d-flex align-items-center justify-content-between">
@@ -66,8 +77,17 @@ const HeaderNav = () => {
               </a>
             </li>
             <li className="nav-item mx-3">
-              <a className="nav-link text-light fw-semibold" href="/profile">
+              <a className="nav-link text-dark fw-semibold" href="/profile">
                 Profile
+              </a>
+            </li>
+            <li className="nav-item mx-3">
+              <a
+                className="nav-link text-dark fw-semibold"
+                href="#"
+                onClick={(e) => { e.preventDefault(); setShowTutorial(true); }}
+              >
+                Help
               </a>
             </li>
             <li className="nav-item mx-3">
@@ -100,6 +120,8 @@ const HeaderNav = () => {
         </div>
       </div>
     </header>
+    <TutorialModal open={showTutorial} onClose={() => setShowTutorial(false)} />
+    </>
   );
 };
 
