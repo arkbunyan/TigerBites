@@ -359,19 +359,21 @@ def set_group_meal(group_id):
         return flask.jsonify({"error": group}), 404
     if username not in [m['netid'] for m in group['members']]:
         return flask.jsonify({"error": "Only group members can update meal time"}), 403
-    # Normalize naive local input to UTC to avoid timezone drift
+    # Normalize only naive local input to UTC; if input already includes timezone (ends with 'Z' or contains offset), trust it
     if isinstance(scheduled, str) and scheduled:
-        try:
-            from datetime import datetime
-            from zoneinfo import ZoneInfo
-            # Input like '2025-12-25T18:30' (no seconds, no tz): treat as America/New_York local time
-            dt_local = datetime.fromisoformat(scheduled)
-            dt_local = dt_local.replace(tzinfo=ZoneInfo('America/New_York'))
-            dt_utc = dt_local.astimezone(ZoneInfo('UTC'))
-            scheduled = dt_utc.isoformat()
-        except Exception:
-            # If parsing fails, leave as-is and let DB handle
-            pass
+        has_tz = scheduled.endswith('Z') or ('+' in scheduled[10:] or '-' in scheduled[10:])
+        if not has_tz:
+            try:
+                from datetime import datetime
+                from zoneinfo import ZoneInfo
+                # Treat naive string as America/New_York local time
+                dt_local = datetime.fromisoformat(scheduled)
+                dt_local = dt_local.replace(tzinfo=ZoneInfo('America/New_York'))
+                dt_utc = dt_local.astimezone(ZoneInfo('UTC'))
+                scheduled = dt_utc.isoformat()
+            except Exception:
+                # If parsing fails, leave as-is
+                pass
     ok2, updated = database.update_group_meal_time(group_id, scheduled)
     if not ok2:
         return flask.jsonify({"error": updated}), 400

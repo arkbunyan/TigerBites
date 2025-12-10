@@ -83,6 +83,7 @@ const GroupsPage = () => {
           const pad = (n) => String(n).padStart(2, '0');
           const localNow = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
           setMealDateTime(localNow);
+          
         } catch {}
       }
       // Load preferences
@@ -121,7 +122,9 @@ const GroupsPage = () => {
         setScheduleMessage(data.error || 'Failed to save meal time');
       } else {
         setScheduleMessage('Meal time saved.');
+        // Refresh details and groups list so the sidebar reflects new time without manual reload
         await loadGroupDetails(selectedGroupId);
+        await loadGroups();
       }
     } catch (e) {
       setScheduleMessage('Network error while saving meal time');
