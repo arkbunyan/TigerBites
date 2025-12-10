@@ -19,11 +19,12 @@ const RestaurantCard = ({ rest, compact = false }) => {
             style={{
               borderTopLeftRadius: "12px",
               borderTopRightRadius: "12px",
-              objectFit: "cover"
+              width: "100%",
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
             }}
           />
         )}
-
         <div className="card-body">
           <h5 className="card-title">{rest.name}</h5>
 
