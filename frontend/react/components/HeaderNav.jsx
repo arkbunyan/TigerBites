@@ -77,13 +77,13 @@ const HeaderNav = () => {
               </a>
             </li>
             <li className="nav-item mx-3">
-              <a className="nav-link text-dark fw-semibold" href={isBackOffice ? "/back_office" : "/map" }>
+              <a className="nav-link text-dark fw-semibold" href={isBackOffice ? "/back_office/feedback" : "/map" }>
                 {isBackOffice ? "Feedback" : "Map" }
               </a>
             </li>
             <li className="nav-item mx-3">
-              <a className="nav-link text-dark fw-semibold" href="/group">
-                Groups
+              <a className="nav-link text-dark fw-semibold" href={isBackOffice ? "/back_office/reviews": "/group"}>
+                {isBackOffice ? "Reviews" : "Groups"}
               </a>
             </li>
             <li className="nav-item mx-3">

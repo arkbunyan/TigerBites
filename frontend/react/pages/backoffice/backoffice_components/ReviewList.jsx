@@ -41,7 +41,7 @@ const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
   if (!reviews || reviews.length === 0) {
     return (
       <div className="alert alert-info">
-        No reviews yet. Be the first to leave a review!
+        No reviews to display.
       </div>
     );
   }

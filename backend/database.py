@@ -495,6 +495,38 @@ def upsert_review(rest_id, username, rating, comment):
             _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
+    
+def get_all_reviews():  
+    """Get all reviews with user and restaurant info."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                SELECT r.id, r.restaurant_id, r.rating, r.comment, r.created_at,
+                       u.netid as username, u.firstname, u.fullname,
+                       rest.name as restaurant_name, rest.category
+                FROM public.reviews r
+                JOIN public.users u ON r.user_id = u.id
+                JOIN public.restaurants rest ON r.restaurant_id = rest.id
+                ORDER BY r.created_at DESC
+                """
+                cursor.execute(sql)
+                rows = cursor.fetchall()
+                
+                reviews = []
+                for row in rows:
+                    review = dict(row)
+                    review['created_at'] = review['created_at'].isoformat()
+                    review['id'] = str(review['id'])
+                    review['restaurant_id'] = str(review['restaurant_id'])
+                    reviews.append(review)
+            
+                return [True, reviews]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
 
 def get_reviews_by_restaurant(rest_id):
     """
@@ -593,38 +625,127 @@ def delete_review(review_id, username):
         return _err_response(ex)
     
 
-# ensure_group_columns removed; schema management lives in data_management/db_manager.py
-    
-#TODO: FINISH THIS @ EVAN 
-# def create_group(user_id):
-#     """
-#     Create a new blank group with user with user_id as Group Leader
-#     Username is stored as 'netid'. Returns [True, user_data] or [False, error_msg].
-#     """
-#     try:
-#         with _get_conn() as conn:
-#             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-#                 sql = """
-#                 INSERT INTO public.groups (netid, email, firstname, fullname)
-#                 VALUES (%s, %s, %s, %s)
-#                 ON CONFLICT (netid) DO UPDATE
-#                 SET email = EXCLUDED.email, 
-#                     firstname = EXCLUDED.firstname, 
-#                     fullname = EXCLUDED.fullname
-#                 RETURNING id, netid, email, firstname, fullname, favorite_cuisine
-#                 """
-#                 print(f"DEBUG upsert_user: Executing SQL with values - netid: {username}, email: {email}, firstname: {firstname}, fullname: {fullname}")
-#                 cursor.execute(sql, (username, email, firstname, fullname))
-#                 row = cursor.fetchone()
-#                 print(f"DEBUG upsert_user: Query result row: {row}")
-#                 conn.commit()
+def get_all_feedback():
+    """Retrieve all feedback entries with user info."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                SELECT f.id, f.created_at, f.restaurant_id, f.user_id, f.response,
+                       u.netid as username, u.firstname, u.fullname
+                FROM public.feedback f
+                JOIN public.users u ON f.user_id = u.id
+                ORDER BY f.created_at DESC
+                """
+                cursor.execute(sql)
+                rows = cursor.fetchall()
                 
-#                 if row:
-#                     return [True, dict(row)]
-#                 return [False, 'Failed to insert/update user']
-#     except Exception as ex:
-#         print(f"DEBUG upsert_user: Exception occurred: {ex}")
-#         return _err_response(ex)
+                feedback_list = []
+                for row in rows:
+                    feedback = dict(row)
+                    feedback['created_at'] = feedback['created_at'].isoformat()
+                    feedback['id'] = str(feedback['id'])
+                    feedback_list.append(feedback)
+                
+                return [True, feedback_list]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+    
+def get_feedback_by_restaurant(rest_id):   
+    """Retrieve feedback entries for a specific restaurant."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                SELECT f.id, f.created_at, f.restaurant_id, f.user_id, f.response,
+                       u.netid as username, u.firstname, u.fullname
+                FROM public.feedback f
+                JOIN public.users u ON f.user_id = u.id
+                WHERE f.restaurant_id = %s
+                ORDER BY f.created_at DESC
+                """
+                cursor.execute(sql, (rest_id,))
+                rows = cursor.fetchall()
+                
+                feedback_list = []
+                for row in rows:
+                    feedback = dict(row)
+                    feedback['created_at'] = feedback['created_at'].isoformat()
+                    feedback['id'] = str(feedback['id'])
+                    feedback_list.append(feedback)
+                
+                return [True, feedback_list]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+    
+def submit_feedback(rest_id, username, response):
+    """Submit feedback for a restaurant by a user."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                # First get the user_id from netid
+                cursor.execute("SELECT id FROM public.users WHERE netid = %s", (username,))
+                user_row = cursor.fetchone()
+                if not user_row:
+                    return [False, 'User not found']
+                
+                user_id = user_row['id']
+                
+                # Insert the feedback
+                sql = """
+                INSERT INTO public.feedback (restaurant_id, user_id, response)
+                VALUES (%s, %s, %s)
+                RETURNING id, created_at, restaurant_id, user_id, response
+                """
+                cursor.execute(sql, (rest_id, user_id, response))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    feedback_data = dict(row)
+                    feedback_data['created_at'] = feedback_data['created_at'].isoformat()
+                    feedback_data['user_id'] = str(feedback_data['user_id'])
+                    feedback_data['restaurant_id'] = str(feedback_data['restaurant_id'])
+                    feedback_data['id'] = str(feedback_data['id'])
+                    return [True, feedback_data]
+                return [False, 'Failed to submit feedback']
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+    
+
+def delete_feedback(feedback_id, username):
+    """Delete feedback by id, only if it belongs to the given user."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                DELETE FROM public.feedback f
+                USING public.users u
+                WHERE f.id = %s AND f.user_id = u.id AND u.netid = %s
+                RETURNING f.id
+                """
+                cursor.execute(sql, (feedback_id, username))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    return [True, None]
+                return [False, 'Feedback not found or unauthorized']
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+
 
 def create_group(group_name, creator_netid, selected_restaurant_id=None):
     """Create a new group and add creator (netid) as leader."""

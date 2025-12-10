@@ -12,6 +12,8 @@ import HeaderNav from "./components/HeaderNav.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import BackOffice_Home from "./pages/backoffice/BackOffice_Home.jsx";
 import BackOffice_Restaurant from "./pages/backoffice/BackOffice_Restaurant.jsx"
+import BackOffice_Feedback from "./pages/backoffice/BackOffice_Feedback.jsx";
+import BackOffice_Reviews from "./pages/backoffice/BackOffice_Reviews.jsx";
 
 const App = () => {
   return (
@@ -33,6 +35,8 @@ const App = () => {
           />
           <Route path="/back_office" element={<BackOffice_Home />} />
           <Route path="/back_office/restaurants/:restId" element={<BackOffice_Restaurant />} />
+          <Route path="/back_office/feedback" element={<BackOffice_Feedback />} />
+          <Route path="/back_office/reviews" element={<BackOffice_Reviews />} />
         </Routes>
       </div>
     </Router>

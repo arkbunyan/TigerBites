@@ -71,12 +71,29 @@ const RestaurantPage = () => {
     setReviews(reviews.filter((r) => r.id !== reviewId));
   };
 
-  const handleCorrectionSubmit = () => {
-    console.log("Correction submitted:", correctionText);
-    alert("Thank you for your correction! We will review it shortly.");
-    setShowModal(false);
-    setCorrectionText("");
-  };
+  const handleCorrectionSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await fetch(`/api/restaurants/${restId}/feedback`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ restId: restId, response: correctionText}),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        
+        console.log("Correction submitted:", correctionText);
+        alert("Thank you for your correction! We will review it shortly.");
+        setShowModal(false);
+        setCorrectionText("");
+      } catch (err) {
+        console.error("Failed to submit correction:", err);
+      } 
+    };
 
   if (loading) return <p>Loading restaurant...</p>;
   if (error) return <p>{error}</p>;

@@ -162,6 +162,14 @@ def restaurant_details(rest_id):
     return flask.jsonify({"restaurant": rest, "menu": menu})
 
 # Review endpoints
+
+@app.route('/api/reviews', methods=['GET'])
+def get_all_reviews():
+    ok, reviews = database.get_all_reviews()
+    if not ok:
+        return flask.jsonify({"error": reviews}), 400
+    return flask.jsonify({"reviews": reviews})
+
 @app.route('/api/restaurants/<rest_id>/reviews', methods=['GET'])
 def get_restaurant_reviews(rest_id):
     ok, reviews = database.get_reviews_by_restaurant(rest_id)
@@ -191,6 +199,35 @@ def create_review(rest_id):
     
     return flask.jsonify({"review": review}), 201
 
+# Feedback Endpoints
+@app.route('/api/restaurants/<rest_id>/feedback', methods=['GET'])
+def get_restaurant_feedback(rest_id):
+    ok, feedback = database.get_feedback_by_restaurant(rest_id)
+    if not ok:
+        return flask.jsonify({"error": feedback}), 400
+    return flask.jsonify({"reviews": feedback})
+
+
+@app.route('/api/restaurants/<rest_id>/feedback', methods=['POST'])
+def submit_feedback(rest_id): 
+    auth.authenticate()
+    data = flask.request.get_json()
+    if not data:
+        return flask.jsonify({"error": "No data provided"}), 400
+    
+    response = data.get('response', '')
+    
+    if not response or not isinstance(response, str) or len(response.strip()) == 0:
+        return flask.jsonify({"error": "Comment must be a non-empty string"}), 400
+    
+    username = auth.get_username()
+    ok, feedback = database.submit_feedback(rest_id, username, response)
+    
+    if not ok:
+        return flask.jsonify({"error": feedback}), 400
+    
+    return flask.jsonify({"feedback": feedback}), 201
+
 # Get all reviews by the authenticated user
 @app.route('/api/users/reviews', methods=['GET'])
 def get_user_reviews():
@@ -211,9 +248,36 @@ def delete_user_review(review_id):
         return flask.jsonify({"error": result}), 400
     return flask.jsonify({"message": "Review deleted"}), 200
 
+@app.route('/api/feedback', methods=['GET'])
+def get_feedback():
+    auth.authenticate()
+    ok, responses = database.get_all_feedback()
+    if not ok:
+        return flask.jsonify({"error": responses}), 400
+    return flask.jsonify({"responses": responses})
+
+@app.route('/api/feedback/<feedback_id>', methods=['DELETE'])
+def delete_feedback(feedback_id):
+    auth.authenticate()
+    username = auth.get_username()
+    ok, result = database.delete_feedback(feedback_id, username)
+    if not ok:
+        return flask.jsonify({"error": result}), 400
+    return flask.jsonify({"message": "Feedback deleted"}), 200
+
 @app.route('/back_office', methods=['GET'])
 def back_office():
     # Force CAS authentication (will redirect to CAS if needed)
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
+
+@app.route('/back_office/feedback', methods=['GET'])
+def back_office_feedback():
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
+
+@app.route('/back_office/reviews', methods=['GET'])
+def back_office_reviews():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
