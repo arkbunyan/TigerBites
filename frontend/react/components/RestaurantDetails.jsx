@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 
-const RestaurantDetails = ({ restaurant, menuItems }) => {
+const RestaurantDetails = ({ restaurant, menuItems, reviews = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        ).toFixed(1)
+      : null;
 
   if (!restaurant)
     return <p className="text-center mt-4">No restaurant data provided.</p>;
@@ -45,11 +52,18 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
               💰 Average price: ${restaurant.avg_price}
             </p>
           )}
-          {restaurant.avg_price && (
-            <p className="text-secondary">
+          {restaurant.yelp_rating && (
+            <p className="text-secondary mb-0">
               ❗Yelp rating: {restaurant.yelp_rating} / 5
             </p>
           )}
+          {averageRating && (
+            <p className="text-secondary mb-0">
+              ⭐ TigerBites user rating: {averageRating} / 5 ({reviews.length}{" "}
+              reviews)
+            </p>
+          )}
+
           {restaurant.website_url && (
             <p className="mt-3">
               <a
@@ -65,7 +79,10 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
         </div>
       </div>
 
-      <div className="card shadow-sm border-0">
+      <div
+        className="card shadow-sm border-0"
+        style={{ backgroundColor: "#e6e6e6" }}
+      >
         <div className="card-body">
           <div
             onClick={() => setIsOpen(!isOpen)}

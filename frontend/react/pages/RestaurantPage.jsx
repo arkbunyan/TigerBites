@@ -83,7 +83,11 @@ const RestaurantPage = () => {
 
   return (
     <div>
-      <RestaurantDetails restaurant={restaurant} menuItems={menuItems} />
+      <RestaurantDetails
+        restaurant={restaurant}
+        menuItems={menuItems}
+        reviews={reviews}
+      />
 
       <div className="container mt-4">
         <hr />

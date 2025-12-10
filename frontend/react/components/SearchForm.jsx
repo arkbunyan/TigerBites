@@ -4,9 +4,13 @@ const SearchForm = ({ onSearch }) => {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
+  const triggerSearch = (newName, newCategory) => {
+    onSearch({ name: newName, category: newCategory });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSearch({ name, category });
+    triggerSearch(name, category);
   };
 
   return (
@@ -25,7 +29,11 @@ const SearchForm = ({ onSearch }) => {
             className="form-control"
             placeholder="Enter restaurant name"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setName(value);
+              triggerSearch(value, category);
+            }}
           />
         </div>
 
@@ -39,7 +47,11 @@ const SearchForm = ({ onSearch }) => {
             className="form-control"
             placeholder="e.g. Mexican, Pizza, Ice Cream"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCategory(value);
+              triggerSearch(name, value);
+            }}
           />
         </div>
 
