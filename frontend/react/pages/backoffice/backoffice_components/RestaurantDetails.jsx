@@ -38,6 +38,54 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
     setEditedMenu(updatedMenu);
   };
 
+  // Enforce 3-digit positive integer for Avg Price (0–999)
+  const handleAvgPriceChange = (value) => {
+    // Strip non-digits
+    let v = String(value).replace(/[^0-9]/g, "");
+    // Limit to first 3 digits
+    if (v.length > 3) v = v.slice(0, 3);
+    // Normalize leading zeros (optional, keep as entered but numeric)
+    const num = v === "" ? "" : String(Math.min(Number(v), 999));
+    setEditedRestaurant((prev) => ({ ...prev, avg_price: num }));
+  };
+
+  // Allow typing a decimal gracefully (e.g., "4." or "4.5")
+  const handleYelpRatingInputChange = (value) => {
+    // Keep only digits and a single dot, allow partial inputs
+    let s = String(value)
+      .replace(/[^0-9.]/g, "")
+      .replace(/\.(?=.*\.)/g, "");
+
+    // Restrict to pattern: up to one digit before dot, and one after dot
+    // but allow partial like "4." while typing
+    const match = s.match(/^([0-5])?(\.([0-9])?)?$/);
+    if (!match) {
+      // If input exceeds bounds (e.g., first digit >5 or more decimals), ignore
+      return;
+    }
+
+    setEditedRestaurant((prev) => ({ ...prev, yelp_rating: s }));
+  };
+
+  // On blur, normalize to clamped number between 0.0 and 5.0 with one decimal
+  const handleYelpRatingBlur = (value) => {
+    let s = String(value)
+      .replace(/[^0-9.]/g, "")
+      .replace(/\.(?=.*\.)/g, "");
+
+    if (s === "") {
+      setEditedRestaurant((prev) => ({ ...prev, yelp_rating: "" }));
+      return;
+    }
+
+    let num = Number(s);
+    if (isNaN(num)) num = 0;
+    if (num < 0) num = 0;
+    if (num > 5) num = 5;
+    const fixed = num.toFixed(1);
+    setEditedRestaurant((prev) => ({ ...prev, yelp_rating: fixed }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving
@@ -110,6 +158,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             </strong>
             <input
               className="form-control mb-2"
+              maxLength={100}
               value={editedRestaurant.name || ""}
               onChange={(e) =>
                 handleRestaurantChange("name", e.target.value)
@@ -122,6 +171,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             </strong>
             <input
               className="form-control mb-2"
+              maxLength={100}
               value={editedRestaurant.category || ""}
               onChange={(e) =>
                 handleRestaurantChange("category", e.target.value)
@@ -134,6 +184,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             </strong>
             <input
               className="form-control mb-2"
+              maxLength={100}
               value={editedRestaurant.hours || ""}
               onChange={(e) =>
                 handleRestaurantChange("hours", e.target.value)
@@ -146,6 +197,7 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             </strong>
             <input
               className="form-control mb-2"
+              maxLength={100}
               value={editedRestaurant.location || ""}
               onChange={(e) =>
                 handleRestaurantChange("location", e.target.value)
@@ -159,22 +211,27 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
             <input
               type="number"
               className="form-control mb-2"
+              inputMode="numeric"
+              min={0}
+              max={999}
+              step={1}
               value={editedRestaurant.avg_price || ""}
-              onChange={(e) =>
-                handleRestaurantChange("avg_price", e.target.value)
-              }
+              onChange={(e) => handleAvgPriceChange(e.target.value)}
+              onBlur={(e) => handleAvgPriceChange(e.target.value)}
+              title="Enter the new average price"
             />
 
             {/*YELP*/}
             Yelp Rating
             <input
-              type="number"
-              step="0.1"
+              type="text"
               className="form-control"
+              inputMode="decimal"
               value={editedRestaurant.yelp_rating || ""}
-              onChange={(e) =>
-                handleRestaurantChange("yelp_rating", e.target.value)
-              }
+              onChange={(e) => handleYelpRatingInputChange(e.target.value)}
+              onBlur={(e) => handleYelpRatingBlur(e.target.value)}
+              placeholder="e.g., 4.5"
+              title="Enter the new Yelp rating"
             />
           </div>
         </div>

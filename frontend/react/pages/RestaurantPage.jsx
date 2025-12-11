@@ -166,10 +166,14 @@ const RestaurantPage = () => {
             <textarea
               className="form-control mb-3"
               rows="4"
+              maxLength={500}
               placeholder="Enter your correction here..."
               value={correctionText}
               onChange={(e) => setCorrectionText(e.target.value)}
             />
+            <div className="text-end text-muted small mb-2">
+              {correctionText.length}/500
+            </div>
             <div className="d-flex justify-content-end">
               <button
                 className="btn btn-secondary me-2"

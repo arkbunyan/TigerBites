@@ -4,6 +4,7 @@ const ReviewForm = ({ restaurantId, onReviewSubmitted }) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const MAX_LEN = 500;
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
@@ -71,7 +72,9 @@ const ReviewForm = ({ restaurantId, onReviewSubmitted }) => {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share your experience..."
+            maxLength={MAX_LEN}
           />
+          <div className="form-text text-end">{comment.length}/{MAX_LEN}</div>
         </div>
         {error && <div className="alert alert-danger">{error}</div>}
         <button

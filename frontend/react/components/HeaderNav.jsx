@@ -117,6 +117,17 @@ const HeaderNav = () => {
                 </a>
 
             </li>
+            {/* Logout button placed immediately after Admin */}
+            <li className="nav-item mx-3">
+              <a
+                className="nav-link fw-semibold text-light"
+                href="#"
+                onClick={handleLogout}
+              >
+                Logout
+              </a>
+            </li>
+            
           </ul>
 
           <div className="text-end me-4">

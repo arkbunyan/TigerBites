@@ -190,6 +190,12 @@ def create_review(rest_id):
     
     if not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
         return flask.jsonify({"error": "Rating must be an integer between 1 and 5"}), 400
+    # Enforce comment length limit
+    if not isinstance(comment, str):
+        comment = str(comment) if comment is not None else ''
+    MAX_COMMENT_LEN = 500
+    if len(comment) > MAX_COMMENT_LEN:
+        return flask.jsonify({"error": f"Comment must be at most {MAX_COMMENT_LEN} characters"}), 400
     
     username = auth.get_username()
     ok, review = database.upsert_review(rest_id, username, rating, comment)
