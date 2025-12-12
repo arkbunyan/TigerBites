@@ -624,6 +624,29 @@ def delete_review(review_id, username):
     except Exception as ex:
         return _err_response(ex)
     
+def delete_review_force(review_id):
+    """Delete a review by id (admin only)."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                sql = """
+                DELETE FROM public.reviews
+                WHERE id = %s
+                RETURNING id
+                """
+                cursor.execute(sql, (review_id,))
+                row = cursor.fetchone()
+                conn.commit()
+                
+                if row:
+                    return [True, None]
+                return [False, 'Review not found']
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+    
 
 def get_all_feedback():
     """Retrieve all feedback entries with user info."""
@@ -722,8 +745,8 @@ def submit_feedback(rest_id, username, response):
         return _err_response(ex)
     
 
-def delete_feedback(feedback_id, username):
-    """Delete feedback by id, only if it belongs to the given user."""
+def delete_feedback(feedback_id):
+    """Delete feedback by id, even if it belongs to another user (admin feature)"""
     try:
         conn = _get_conn()
         try:
@@ -731,10 +754,10 @@ def delete_feedback(feedback_id, username):
                 sql = """
                 DELETE FROM public.feedback f
                 USING public.users u
-                WHERE f.id = %s AND f.user_id = u.id AND u.netid = %s
+                WHERE f.id = %s 
                 RETURNING f.id
                 """
-                cursor.execute(sql, (feedback_id, username))
+                cursor.execute(sql, (feedback_id, ))
                 row = cursor.fetchone()
                 conn.commit()
                 

@@ -276,7 +276,7 @@ def get_feedback():
 def delete_feedback(feedback_id):
     auth.authenticate()
     username = auth.get_username()
-    ok, result = database.delete_feedback(feedback_id, username)
+    ok, result = database.delete_feedback(feedback_id)
     if not ok:
         return flask.jsonify({"error": result}), 400
     return flask.jsonify({"message": "Feedback deleted"}), 200
@@ -311,6 +311,22 @@ def back_office_reviews():
     if not admin:
         return flask.abort(403)
     return flask.send_file('../frontend/react/index.html')
+
+@app.route('/api/reviews/<review_id>/admin_delete', methods=['DELETE'])
+def admin_delete_review(review_id):
+    auth.authenticate()
+    ok, admin = database.get_admin_status(auth.get_username())
+    if not ok:
+        return flask.jsonify({"error": admin}), 400
+    if not admin:
+        return flask.abort(403)
+    
+    ok, result = database.delete_review_force(review_id)
+    if not ok:
+        return flask.jsonify({"error": result}), 400
+    return flask.jsonify({"message": "Review deleted"}), 200
+    
+
 
 # Example API endpoint that requires authentication
 @app.route('/data')

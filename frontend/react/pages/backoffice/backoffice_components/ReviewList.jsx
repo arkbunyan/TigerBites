@@ -7,7 +7,7 @@ const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
     }
 
     try {
-      const response = await fetch(`/api/reviews/${reviewId}`, {
+      const response = await fetch(`/api/reviews/${reviewId}/admin_delete`, {
         method: "DELETE",
         credentials: "same-origin",
       });
