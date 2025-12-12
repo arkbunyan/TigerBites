@@ -161,7 +161,7 @@ def load_menu_for_restaurant(rest_id):
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
-                    "SELECT * "
+                    "SELECT id, restaurant_id, name, description, avg_price "
                     "FROM menu_items WHERE restaurant_id = %s "
                     "ORDER BY name ASC"
                 )
@@ -171,6 +171,8 @@ def load_menu_for_restaurant(rest_id):
                 items = []
                 for row in rows:
                     items.append({
+                        'id': str(row.get('id')) if row.get('id') is not None else None,
+                        'restaurant_id': str(row.get('restaurant_id')) if row.get('restaurant_id') is not None else None,
                         'name': row.get('name'),
                         'description': row.get('description'), 
                         'price': float(row.get('avg_price')) if row.get('avg_price') is not None else None,
@@ -223,6 +225,43 @@ def update_restaurant(restaurant):
                 updated_restaurant = cursor.fetchone()
                 conn.commit()
                 return [True, dict(updated_restaurant)]
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
+
+def update_menu_items(restaurant_id, items):
+    """Update menu items for a restaurant. Supports updating name, description, and price.
+    Items should be a list of dicts: {id, name, description, price}.
+    Returns [True, updated_count] or [False, error_msg]."""
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+                updated = 0
+                for item in items or []:
+                    # Determine price column name in DB (assuming 'avg_price' per existing select)
+                    cursor.execute(
+                        """
+                        UPDATE public.menu_items
+                        SET name = %s,
+                            description = %s,
+                            avg_price = %s
+                        WHERE id = %s AND restaurant_id = %s
+                        RETURNING id
+                        """,
+                        (
+                            item.get('name'),
+                            item.get('description'),
+                            item.get('price'),
+                            item.get('id'),
+                            restaurant_id,
+                        ),
+                    )
+                    if cursor.fetchone():
+                        updated += 1
+                conn.commit()
+                return [True, updated]
         finally:
             _put_conn(conn)
     except Exception as ex:

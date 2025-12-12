@@ -101,10 +101,23 @@ const RestaurantDetails = ({ restaurant, menuItems }) => {
         const data = await response.json();
         throw new Error(data.error || `HTTP ${response.status}`);
       }
-      // Reset Save Status after 3 seconds
-      setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000);
       const data = await response.json();
+
+      // Update menu items (second request)
+      const menuRes = await fetch(`/api/restaurants/${restaurant.id}/menu/update`, {
+        method: "PUT",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: editedMenu }),
+      });
+      if (!menuRes.ok) {
+        const m = await menuRes.json();
+        throw new Error(m.error || `HTTP ${menuRes.status}`);
+      }
+
+      // Reset Save Status after 3 seconds
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
       console.error("Failed to update restaurant:", err);
     }

@@ -259,9 +259,16 @@ def get_user_reviews():
 def delete_user_review(review_id):
     auth.authenticate()
     username = auth.get_username()
-    ok, result = database.delete_review(review_id, username)
+    # Admins can delete any review
+    ok_admin, is_admin = database.get_admin_status(username)
+    if ok_admin and is_admin:
+        ok, result = database.admin_delete_review(review_id)
+    else:
+        ok, result = database.delete_review(review_id, username)
     if not ok:
-        return flask.jsonify({"error": result}), 400
+        # Use 403 for unauthorized/ownership issues
+        status = 403 if 'unauthorized' in str(result).lower() else 400
+        return flask.jsonify({"error": result}), status
     return flask.jsonify({"message": "Review deleted"}), 200
 
 @app.route('/api/feedback', methods=['GET'])
@@ -276,9 +283,15 @@ def get_feedback():
 def delete_feedback(feedback_id):
     auth.authenticate()
     username = auth.get_username()
-    ok, result = database.delete_feedback(feedback_id)
+    # Admins can delete any feedback
+    ok_admin, is_admin = database.get_admin_status(username)
+    if ok_admin and is_admin:
+        ok, result = database.admin_delete_feedback(feedback_id)
+    else:
+        ok, result = database.delete_feedback(feedback_id, username)
     if not ok:
-        return flask.jsonify({"error": result}), 400
+        status = 403 if 'unauthorized' in str(result).lower() else 400
+        return flask.jsonify({"error": result}), status
     return flask.jsonify({"message": "Feedback deleted"}), 200
 
 @app.route('/back_office', methods=['GET'])
@@ -541,6 +554,22 @@ def update_restaurant(rest_id):
     if not ok:
         return flask.jsonify({"error": result}), 400
     return flask.jsonify({"group": result}), 201
+
+@app.route('/api/restaurants/<rest_id>/menu/update', methods=['PUT'])
+def update_restaurant_menu(rest_id):
+    """Back Office: Update menu items for a restaurant."""
+    username = _require_auth()
+    # Ensure user is admin
+    ok_admin, is_admin = database.get_admin_status(username)
+    if not ok_admin or not is_admin:
+        return flask.jsonify({"error": "Forbidden"}), 403
+
+    payload = flask.request.get_json() or {}
+    items = payload.get('items', [])
+    ok, updated_count = database.update_menu_items(rest_id, items)
+    if not ok:
+        return flask.jsonify({"error": updated_count}), 400
+    return flask.jsonify({"updated": updated_count}), 200
 
 # Run the Flask app
 if __name__ == "__main__":
