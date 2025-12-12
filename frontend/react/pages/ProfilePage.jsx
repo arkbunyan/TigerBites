@@ -405,7 +405,7 @@ export default function ProfilePage() {
                         style={{ fontSize: "0.6rem" }}
                         onClick={() => handleRemoveAllergy(allergy)}
                         aria-label="Remove"
-                      ></button>
+                      >X</button>
                     </span>
                   ))}
                 </div>
@@ -544,7 +544,7 @@ export default function ProfilePage() {
                           handleRemoveDietaryRestriction(restriction)
                         }
                         aria-label="Remove"
-                      ></button>
+                      >X</button>
                     </span>
                   ))}
                 </div>
