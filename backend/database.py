@@ -1108,6 +1108,33 @@ def get_group_preferences(group_id):
             _put_conn(conn)
     except Exception as ex:
         return _err_response(ex)
+    
+
+def get_admin_status(username):
+    """
+    Check if a user is an admin by netid (username).
+    Returns [True, is_admin] or [False, error_msg].
+    """
+    try:
+        conn = _get_conn()
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT admin_status
+                FROM public.users 
+                WHERE netid = %s
+                """
+                cursor.execute(sql, (username,))
+                row = cursor.fetchone()
+                
+                if row:
+                    is_admin = row[0]
+                    return [True, is_admin]
+                return [False, 'User not found']
+        finally:
+            _put_conn(conn)
+    except Exception as ex:
+        return _err_response(ex)
 
 if __name__ == "__main__":
     pass

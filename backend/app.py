@@ -234,6 +234,16 @@ def submit_feedback(rest_id):
     
     return flask.jsonify({"feedback": feedback}), 201
 
+# Check if this user is a TB admin
+@app.route('/api/users/admin_status', methods=['GET'])
+def get_admin_status():
+    auth.authenticate()
+    username = auth.get_username()
+    ok, is_admin = database.get_admin_status(username)
+    if not ok:
+        return flask.jsonify({"error": is_admin}), 400
+    return flask.jsonify({"is_admin": is_admin})
+
 # Get all reviews by the authenticated user
 @app.route('/api/users/reviews', methods=['GET'])
 def get_user_reviews():
@@ -275,16 +285,31 @@ def delete_feedback(feedback_id):
 def back_office():
     # Force CAS authentication (will redirect to CAS if needed)
     auth.authenticate()
+    ok, admin = database.get_admin_status(auth.get_username())
+    if not ok:
+        return flask.jsonify({"error": admin}), 400
+    if not admin:
+        return flask.abort(403)
     return flask.send_file('../frontend/react/index.html')
 
 @app.route('/back_office/feedback', methods=['GET'])
 def back_office_feedback():
     auth.authenticate()
+    ok, admin = database.get_admin_status(auth.get_username())
+    if not ok:
+        return flask.jsonify({"error": admin}), 400
+    if not admin:
+        return flask.abort(403)
     return flask.send_file('../frontend/react/index.html')
 
 @app.route('/back_office/reviews', methods=['GET'])
 def back_office_reviews():
     auth.authenticate()
+    ok, admin = database.get_admin_status(auth.get_username())
+    if not ok:
+        return flask.jsonify({"error": admin}), 400
+    if not admin:
+        return flask.abort(403)
     return flask.send_file('../frontend/react/index.html')
 
 # Example API endpoint that requires authentication
