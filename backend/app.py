@@ -259,10 +259,10 @@ def get_user_reviews():
 def delete_user_review(review_id):
     auth.authenticate()
     username = auth.get_username()
-    # Admins can delete any review
+    # Admins can delete any review; normal users can delete only their own
     ok_admin, is_admin = database.get_admin_status(username)
     if ok_admin and is_admin:
-        ok, result = database.admin_delete_review(review_id)
+        ok, result = database.delete_review_force(review_id)
     else:
         ok, result = database.delete_review(review_id, username)
     if not ok:
@@ -283,15 +283,13 @@ def get_feedback():
 def delete_feedback(feedback_id):
     auth.authenticate()
     username = auth.get_username()
-    # Admins can delete any feedback
+    # Only admins can delete feedback from Back Office
     ok_admin, is_admin = database.get_admin_status(username)
-    if ok_admin and is_admin:
-        ok, result = database.admin_delete_feedback(feedback_id)
-    else:
-        ok, result = database.delete_feedback(feedback_id, username)
+    if not (ok_admin and is_admin):
+        return flask.jsonify({"error": "Forbidden"}), 403
+    ok, result = database.delete_feedback(feedback_id)
     if not ok:
-        status = 403 if 'unauthorized' in str(result).lower() else 400
-        return flask.jsonify({"error": result}), status
+        return flask.jsonify({"error": result}), 400
     return flask.jsonify({"message": "Feedback deleted"}), 200
 
 @app.route('/back_office', methods=['GET'])

@@ -10,12 +10,10 @@ const ReviewList = ({ reviews, currentUsername, onDeleteReview }) => {
     try {
       const response = await fetch(`/api/reviews/${reviewId}`, {
         method: "DELETE",
-        credentials: "same-origin",
+        credentials: "include",
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       if (onDeleteReview) {
         onDeleteReview(reviewId);

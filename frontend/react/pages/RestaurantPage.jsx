@@ -12,6 +12,7 @@ const RestaurantPage = () => {
   const [reviews, setReviews] = useState([]);
   const [currentUsername, setCurrentUsername] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [correctionText, setCorrectionText] = useState("");
@@ -49,7 +50,10 @@ const RestaurantPage = () => {
         return null;
       })
       .then((data) => {
-        if (data) setCurrentUsername(data.username);
+        if (data) {
+          setCurrentUsername(data.username);
+          setIsAdmin(!!data.admin_status);
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -126,6 +130,7 @@ const RestaurantPage = () => {
         <ReviewList
           reviews={reviews}
           currentUsername={currentUsername}
+          isAdmin={isAdmin}
           onDeleteReview={handleDeleteReview}
         />
         {restaurant && (
