@@ -2,3 +2,10 @@
 .venv
 backend/instance
 node_modules
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+htmlcov/
+.coverage
+instance/
