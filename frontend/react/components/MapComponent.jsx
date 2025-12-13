@@ -12,8 +12,10 @@ export default function MapComponent({ latitude, longitude }) {
   const [openMarkerId, setOpenMarkerId] = useState(null);
 
   const position = { lat: latitude, lng: longitude };
+  const mapsKey = process.env.GOOGLE_MAPS_KEY;
+
   return (
-    <APIProvider apiKey="AIzaSyAKMIFCaA4lMg03q7j_AevC-sHcJCv7RwA">
+    <APIProvider apiKey={mapsKey}>
       <div className="map">
         <h4 className="mb-3">Location</h4>
         <Map
