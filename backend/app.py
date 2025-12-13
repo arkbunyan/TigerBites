@@ -117,11 +117,18 @@ def group_page():
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
+# Serve individual restaurant page (client-side route)
+@app.route('/restaurants/<rest_id>', methods=['GET'])
+def restaurant_page(rest_id):
+    auth.authenticate()
+    return flask.send_file('../frontend/react/index.html')
+
 # Logout route that redirects to CAS logout
 @app.route('/logout_cas', methods=['GET'])
 def logout_cas():
     # This route serves the React app to show the LogoutCasPage after CAS redirects back
     return flask.send_file('../frontend/react/index.html')
+
 
 # Logout app page (no authentication required)
 @app.route('/logout_app', methods=['GET'])
@@ -147,9 +154,8 @@ def search_results():
 
     return flask.jsonify({"restaurants": restaurants[1]})
 
-# Retrieve restaurant details and menu
+# Retrieve restaurant details and menu (JSON API)
 @app.route('/api/restaurants/<rest_id>', methods=['GET'])
-@app.route('/back_office/restaurants/<rest_id>', methods=['GET'])
 def restaurant_details(rest_id):
     ok_r, rest = database.load_restaurant_by_id(rest_id)
     if not ok_r:
@@ -160,6 +166,17 @@ def restaurant_details(rest_id):
         menu = []
 
     return flask.jsonify({"restaurant": rest, "menu": menu})
+
+@app.route('/back_office/restaurants/<rest_id>', methods=['GET'])
+def back_office_restaurant_page(rest_id):
+    auth.authenticate()
+    ok, admin = database.get_admin_status(auth.get_username())
+    if not ok:
+        return flask.jsonify({"error": admin}), 400
+    if not admin:
+        return flask.abort(403)
+    return flask.send_file('../frontend/react/index.html')
+
 
 # Review endpoints
 

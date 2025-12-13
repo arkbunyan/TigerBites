@@ -21,13 +21,3 @@ npm run builddev
 python -m backend.runserver [port #]
 
 ---
-
-## Directory Structure
-
-_(Add structure here)_
-
----
-
-## TODO
-
-- Add more (not a priority rn)
