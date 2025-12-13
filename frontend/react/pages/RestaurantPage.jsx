@@ -162,7 +162,6 @@ const RestaurantPage = () => {
               backgroundColor: "white",
               padding: "20px",
               borderRadius: "8px",
-              width: "800px",
               width: "600px",
               boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
             }}

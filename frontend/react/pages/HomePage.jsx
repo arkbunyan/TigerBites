@@ -38,7 +38,7 @@ const HomePage = () => {
           Update your preferences in your profile, create groups with friends, get personalized recommendations, and explore restaurants on our map. Find what satisfies your cravings instantly.
         </p>
 
-        {/* CTA Button */}
+        {/* Get Started Button */}
         <div style={{ marginTop: 28 }}>
           <a href="/discover" className="text-decoration-none">
             <button

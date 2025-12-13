@@ -20,8 +20,8 @@ if not DATABASE_URL:
 # Small connection pool
 pool = SimpleConnectionPool(
     minconn=1,
-    maxconn=2,
-    dsn=DATABASE_URL,
+    maxconn=2,  
+    dsn=DATABASE_URL
 )
 
 # Paths for menu CSVs
@@ -140,7 +140,7 @@ def restaurant_search(params):
     try:
         conn = _get_conn()
         try:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as c:
+            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
                 sql = (
                     "SELECT * "
                     "FROM restaurants "
@@ -788,10 +788,9 @@ def delete_feedback(feedback_id):
         try:
             with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as c:
                 sql = """
-                DELETE FROM public.feedback f
-                USING public.users u
-                WHERE f.id = %s
-                RETURNING f.id
+                DELETE FROM public.feedback
+                WHERE id = %s 
+                RETURNING id
                 """
                 c.execute(sql, (feedback_id,))
                 row = c.fetchone()

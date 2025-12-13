@@ -18,15 +18,6 @@ from backend import database
 
 _CAS_URL = 'https://fed.princeton.edu/cas/'
 
-
-#-----------------------------------------------------------------------
-
-@app.route('/api/getusername', methods=['GET'])
-def api_getusername():
-    if not is_authenticated():
-        flask.abort(403)
-    return flask.jsonify({"username": get_username()})
-
 #-----------------------------------------------------------------------
 
 @app.route('/api/profile', methods=['GET'])

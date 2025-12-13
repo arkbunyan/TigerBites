@@ -91,9 +91,14 @@ def create_users_table():
     CREATE TABLE IF NOT EXISTS public.users (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at timestamptz NOT NULL DEFAULT now(),
-        netid TEXT,
-        name  TEXT,
-        fav_restaurant uuid REFERENCES public.restaurants(id)
+        netid TEXT UNIQUE,
+        email TEXT,
+        firstname TEXT,
+        fullname TEXT,
+        favorite_cuisine TEXT[],
+        allergies TEXT[],
+        dietary_restrictions TEXT[],
+        admin_status BOOLEAN DEFAULT FALSE
     );
     """
     with get_conn() as conn, conn.cursor() as cur:

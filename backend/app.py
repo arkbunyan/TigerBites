@@ -16,10 +16,11 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['SQLALCHEMY_DATABASE_URI'] = session_database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Cap SQLAlchemy engine pool size for session store to avoid exceeding DB role limits
+
+# Cap SQLAlchemy engine pool size for session store to avoid exceeding DB connection limits
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_size': 1,        # keep minimal
-    'max_overflow': 0,     # do not exceed pool_size
+    'pool_size': 1,        
+    'max_overflow': 0,     
     'pool_pre_ping': True, # detect stale connections
     'pool_recycle': 1800   # recycle every 30 minutes
 }
@@ -29,7 +30,7 @@ app.config['SESSION_SQLALCHEMY'] = flask_sqlalchemy.SQLAlchemy(
 )
 flask_session.Session(app)
 
-# Gracefully close connection pools on app shutdown
+# Close connection pools when the app shuts down
 def _dispose_pools():
     try:
         # Close psycopg2 pooled connections
@@ -38,7 +39,7 @@ def _dispose_pools():
     except Exception:
         pass
     try:
-        # Dispose SQLAlchemy engine for session store
+        # Close SQLAlchemy engine for session store
         sess_db = app.config.get('SESSION_SQLALCHEMY')
         if sess_db is not None and hasattr(sess_db, 'engine'):
             sess_db.engine.dispose()
@@ -47,7 +48,7 @@ def _dispose_pools():
 
 atexit.register(_dispose_pools)
 
-# Test React
+# Welcome page route (not protected)
 @app.route('/', methods=['GET'])
 def index():
     return flask.send_file('../frontend/react/index.html')
@@ -95,7 +96,6 @@ def map():
 # Load profile data
 @app.route('/profile', methods=['GET'])
 def profile_page():
-    # Serve React app for client-side profile routing
     auth.authenticate()
     return flask.send_file('../frontend/react/index.html')
 
@@ -179,7 +179,6 @@ def back_office_restaurant_page(rest_id):
 
 
 # Review endpoints
-
 @app.route('/api/reviews', methods=['GET'])
 def get_all_reviews():
     ok, reviews = database.get_all_reviews()
@@ -353,15 +352,6 @@ def admin_delete_review(review_id):
     if not ok:
         return flask.jsonify({"error": result}), 400
     return flask.jsonify({"message": "Review deleted"}), 200
-    
-
-
-# Example API endpoint that requires authentication
-@app.route('/data')
-def api_data():
-    if not auth.is_authenticated():
-        flask.abort(403)
-    return flask.jsonify({"user": auth.get_username(), "data": []})
 
 # -------------------- Group Feature API Endpoints --------------------
 
